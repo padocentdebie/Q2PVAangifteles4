@@ -9,6 +9,7 @@
         :root { --polblauw: #1d4e89; --goud: #f9d423; --bg: #f4f7f9; --fout: #e53e3e; --goed: #28a745; --tekst: #2d3748; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 20px; color: var(--tekst); }
         .container { max-width: 950px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .header-img { width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px; margin-bottom: 20px; border: 2px solid var(--polblauw); }
         .screen { display: none; }
         .active { display: block; }
         .zin-container { margin-bottom: 20px; padding: 15px; border-left: 5px solid var(--polblauw); background: #f8fafc; border-radius: 4px; }
@@ -28,10 +29,11 @@
 
 <div class="container">
     <div id="login-screen" class="screen active">
-        <h1 style="color:var(--polblauw); text-align:center;">PV-Training: Actief Schrijven</h1>
-        <p style="text-align:center;">Herschrijf de voltooide zinnen naar de <strong>actieve verleden tijd (OVT)</strong>.</p>
+        <img src="image_5fbd7a.jpg" alt="Politie Training" class="header-img">
+        <h1 style="color:var(--polblauw); text-align:center;">PV-Training: Actief Schrijven (OVT)</h1>
+        <p style="text-align:center;">Herschrijf de voltooide zinnen naar de <strong>actieve verleden tijd</strong>.</p>
         <input type="text" id="student-naam" placeholder="Naam Verbalisant">
-        <button onclick="startTraining()" class="btn-main" style="margin-top:20px;">START DOSSIER (25 ZINNEN)</button>
+        <button onclick="startTraining()" class="btn-main" style="margin-top:20px;">START TRAINING (25 ZINNEN)</button>
     </div>
 
     <div id="input-screen" class="screen">
@@ -41,23 +43,23 @@
     </div>
 
     <div id="wait-screen" class="screen">
-        <h2 style="text-align:center;">Ingeleverd</h2>
-        <p style="text-align:center;">Wacht tot de docent de nakijkronde start.</p>
+        <h2 style="text-align:center;">Dossier Ontvangen</h2>
+        <p style="text-align:center;">Wacht op de instructeur voor de peer-review fase.</p>
     </div>
 
     <div id="peer-screen" class="screen">
-        <h2>Controle: <span id="review-naam"></span></h2>
+        <h2>Controleer Dossier: <span id="review-naam"></span></h2>
         <div id="peer-lijst"></div>
     </div>
 
     <div class="admin-zone">
-        <h4>Docenten Dashboard</h4>
+        <h4>Instructeur Dashboard</h4>
         <div style="margin-bottom:15px;">
-            <button onclick="activeerNakijken()" style="background:var(--goed); color:white; padding:12px 20px; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">START NAKIJKEN</button>
+            <button onclick="activeerNakijken()" style="background:var(--goed); color:white; padding:12px 20px; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">START PEER-REVIEW</button>
             <button onclick="wisAlles()" style="background:var(--fout); color:white; padding:12px 20px; border:none; border-radius:4px; cursor:pointer; font-weight:bold; margin-left:10px;">RESET SESSIE</button>
         </div>
         <table>
-            <thead><tr><th>Verbalisant</th><th>Score / Status</th></tr></thead>
+            <thead><tr><th>Verbalisant</th><th>Score</th><th>Status</th></tr></thead>
             <tbody id="score-body"></tbody>
         </table>
     </div>
@@ -183,7 +185,6 @@
     let mijnId = "";
     let peerIdScore = "";
     let lokaleScore = 0;
-    let beantwoord = 0;
 
     function startTraining() {
         const naam = document.getElementById('student-naam').value;
@@ -193,8 +194,8 @@
         const div = document.getElementById('vragen-lijst');
         div.innerHTML = mijnSelectie.map(i => `
             <div class="zin-container">
-                <span style="color:var(--polblauw); font-weight:bold; font-size:0.85em;">Herschrijf: ${zinnenPool[i].fout}</span>
-                <input type="text" id="zin-${i}" autocomplete="off" placeholder="Typ de actieve zin in OVT...">
+                <p style="color:var(--polblauw); font-weight:bold;">VOLTOOID: ${zinnenPool[i].fout}</p>
+                <input type="text" id="zin-${i}" autocomplete="off" placeholder="Herschrijf naar actieve verleden tijd...">
             </div>
         `).join('');
     }
@@ -215,7 +216,6 @@
         const container = btn.closest('.zin-container');
         if(container.dataset.beoordeeld) return;
         container.dataset.beoordeeld = "true";
-        beantwoord++;
         if(type === 'goed') { lokaleScore++; container.classList.add('is-goed'); } 
         else { container.classList.add('is-fout'); }
         container.querySelector('.sleutel-box').style.display = 'block';
@@ -224,13 +224,14 @@
 
     function renderPeer(pData, pKey) {
         peerIdScore = pKey;
+        lokaleScore = 0;
         showScreen('peer-screen');
         document.getElementById('review-naam').innerText = pData.naam;
         const div = document.getElementById('peer-lijst');
         div.innerHTML = pData.mijnSelectie.map(idx => `
             <div class="zin-container">
                 <span style="font-size:0.8em; color:gray;">BRON: ${zinnenPool[idx].fout}</span>
-                <span style="display:block; margin:10px 0; font-weight:bold;">ANTWOORD: ${pData.antwoorden[idx] || '[Geen invoer]'}</span>
+                <p style="margin:10px 0; font-weight:bold;">ANTWOORD: ${pData.antwoorden[idx] || '[Leeg]'}</p>
                 <div style="display:flex; gap:10px;">
                     <button class="btn-check" style="background:var(--goed);" onclick="beoordeel(this, 'goed')">GOED</button>
                     <button class="btn-check" style="background:var(--fout);" onclick="beoordeel(this, 'fout')">FOUT</button>
@@ -245,15 +246,15 @@
         body.innerHTML = "";
         snap.forEach(c => {
             const s = c.val();
-            body.innerHTML += `<tr><td>${s.naam}</td><td><strong>${s.score} / 25</strong> (${s.status || 'Bezig'})</td></tr>`;
+            body.innerHTML += `<tr><td>${s.naam}</td><td><strong>${s.score} / 25</strong></td><td>${s.status}</td></tr>`;
         });
     });
 
     db.ref('taaltraining/status').on('value', snap => {
         if(snap.val() === 'review' && mijnId) {
             db.ref('taaltraining/studenten/' + mijnId).once('value', s => {
-                const target = s.val().toegewezenAan;
-                db.ref('taaltraining/studenten/' + target).once('value', p => renderPeer(p.val(), p.key));
+                const targetId = s.val().toegewezenAan;
+                db.ref('taaltraining/studenten/' + targetId).once('value', p => renderPeer(p.val(), p.key));
             });
         }
     });
@@ -261,12 +262,12 @@
     function activeerNakijken() {
         db.ref('taaltraining/studenten').once('value', snap => {
             let ids = []; snap.forEach(c => ids.push(c.key));
-            if (ids.length < 2) return alert("Wacht tot er minimaal 2 studenten zijn.");
-            let shuf = ids.sort(() => Math.random() - 0.5);
+            if (ids.length < 2) return alert("Minimaal 2 studenten nodig.");
+            let shuf = [...ids].sort(() => Math.random() - 0.5);
             shuf.forEach((id, i) => {
                 db.ref('taaltraining/studenten/' + id).update({ 
                     toegewezenAan: shuf[(i + 1) % shuf.length],
-                    status: "Nalezen"
+                    status: "Nalezen..."
                 });
             });
             db.ref('taaltraining/status').set('review');
@@ -278,7 +279,7 @@
         document.getElementById(id).classList.add('active');
     }
 
-    function wisAlles() { if(confirm("Volledige reset?")) db.ref('taaltraining').set(null).then(() => location.reload()); }
+    function wisAlles() { if(confirm("Data wissen?")) db.ref('taaltraining').set(null).then(() => location.reload()); }
 </script>
 </body>
 </html>
