@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Politie Academie - Werkwoordsvormen Training</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <style>
+        :root { --polblauw: #1d4e89; --goud: #f9d423; --bg: #f4f7f9; --fout: #e53e3e; --goed: #28a745; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 20px; color: #2d3748; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1, h2 { color: var(--polblauw); text-align: center; border-bottom: 3px solid var(--goud); padding-bottom: 10px; }
+        
+        /* Schermen */
+        .screen { display: none; }
+        .active { display: block; }
+
+        /* Form styling */
+        .zin-container { margin-bottom: 20px; padding: 15px; border-left: 4px solid var(--polblauw); background: #f8fafc; }
+        .foute-zin { font-style: italic; color: var(--fout); margin-bottom: 8px; display: block; }
+        input[type="text"] { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px; box-sizing: border-box; }
+        
+        button { background: var(--polblauw); color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; text-transform: uppercase; }
+        button:hover { opacity: 0.9; }
+        .admin-btn { background: var(--fout); margin-top: 50px; }
+        .start-btn { background: var(--goed); }
+
+        /* Nakijken */
+        .nakijk-box { border: 2px solid var(--goud); padding: 20px; margin-top: 20px; border-radius: 8px; }
+        .badge { background: var(--polblauw); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="login-screen" class="screen active">
+        <h1>Inloggen Student</h1>
+        <p>Voer je naam in om te starten met de taaltraining.</p>
+        <input type="text" id="student-naam" placeholder="Volledige naam">
+        <button onclick="login()">Start Training</button>
+    </div>
+
+    <div id="input-screen" class="screen">
+        <h2>Verbeter de Rapportage</h2>
+        <p>Schrijf de volledige zin correct over (let op het voltooid deelwoord).</p>
+        <div id="vragen-lijst"></div>
+        <button onclick="verstuurZinnen()">Lever in voor Nakijken</button>
+    </div>
+
+    <div id="wait-screen" class="screen">
+        <h2>Geduld a.u.b.</h2>
+        <p>Je werk is ingeleverd. Wacht tot de docent de nakijkronde start...</p>
+        <div id="status-update"></div>
+    </div>
+
+    <div id="peer-screen" class="screen">
+        <h2>Peer Review: <span id="review-naam"></span></h2>
+        <p>Kijk de zinnen van je collega na. Bespreek de fouten klassikaal.</p>
+        <div id="peer-lijst"></div>
+    </div>
+
+    <div class="admin-zone">
+        <button class="admin-btn" onclick="toggleAdmin()">Docenten Menu</button>
+        <div id="admin-controls" style="display:none; border-top: 1px solid #ccc; margin-top: 20px; padding-top: 20px;">
+            <button class="start-btn" onclick="startNakijken()">Start Nakijkronde (Verdeel Werk)</button>
+            <button onclick="wisAlles()" style="background:#4a5568;">Reset Volledige Sessie</button>
+            <p id="aanmeldingen"></p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Firebase Config (Zelfde als Hans/Samir project)
+    const firebaseConfig = {
+        apiKey: "AIzaSyBj8dXkl1rEfyx54_MDy_tYd2P7kAeU8VQ",
+        authDomain: "q2les3samirgem.firebaseapp.com",
+        databaseURL: "https://q2les3samirgem-default-rtdb.europe-west1.firebasedatabase.app/",
+        projectId: "q2les3samirgem",
+        storageBucket: "q2les3samirgem.firebasestorage.app",
+        messagingSenderId: "8681998187",
+        appId: "1:8681998187:web:fd08067494a010dc572e2e"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const zinnen = [
+        "De verdachte is direct na de melding door ons aangehoude.",
+        "Het slachtoffer heeft gisteren aangifte van diefstal gedaan.",
+        "De agent heeft de situatie met de getuige besproken.",
+        "De camerabeelden zijn door de rechercheurs bekeken en geanalyseert.",
+        "Heeft de getuige de dader wel goed herkent?",
+        "De gestolen auto werd gisteravond in de sloot teruggevonden.",
+        "De verbalisant heeft de rechten van de verdachte voorgelezen.",
+        "Er is tijdens de fouillering een illegaal wapen ontdekken.",
+        "De politie heeft de weg urenlang afgezet voor onderzoek.",
+        "Het proces-verbaal is door de officier van justitie getekent.",
+        "De inbreker is via het dakraam naar binnen geklommen.",
+        "De getuigenverklaringen zijn door de administratie verwerkt.",
+        "De verdachte heeft de diefstal tijdens het verhoor ontkent.",
+        "Is de snelheid van het voertuig correct gemeten?",
+        "De buurtbewoners zijn door de wijkagent gewaarschuwt.",
+        "Het sporenonderzoek is door de forensische opsporing afgerond.",
+        "De dader is door de surveillance-eenheid achtervolgt.",
+        "Alle bewijsstukken zijn in beslag genome door de politie.",
+        "De verdachte heeft de ruit met een baksteen ingegooid.",
+        "De centralist heeft de eenheid direct naar het adres gestuurt.",
+        "Er is door de melder melding gemaakt van geluidsoverlast.",
+        "De agenten hebben de ruzie tussen de buren gesust.",
+        "De vermiste persoon is gelukkig in goede gezondheid aangetroffen.",
+        "De verdachte is door de recherche langdurig verhoord.",
+        "Heeft u de verdachte situatie al bij uw collega gemelt?"
+    ];
+
+    let mijnNaam = "";
+    let mijnId = "";
+
+    function login() {
+        mijnNaam = document.getElementById('student-naam').value;
+        if(!mijnNaam) return alert("Naam verplicht!");
+        showScreen('input-screen');
+        renderVragen();
+    }
+
+    function renderVragen() {
+        const div = document.getElementById('vragen-lijst');
+        div.innerHTML = zinnen.map((z, i) => `
+            <div class="zin-container">
+                <span class="foute-zin">${i+1}. ${z}</span>
+                <input type="text" id="zin-${i}" placeholder="Typ hier de volledige correcte zin...">
+            </div>
+        `).join('');
+    }
+
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    function verstuurZinnen() {
+        const antwoorden = zinnen.map((_, i) => document.getElementById(`zin-${i}`).value);
+        if(antwoorden.some(a => a === "")) return alert("Maak eerst alle zinnen af!");
+        
+        const ref = db.ref('taaltraining/studenten').push({
+            naam: mijnNaam,
+            antwoorden: antwoorden,
+            toegewezenAan: ""
+        });
+        mijnId = ref.key;
+        showScreen('wait-screen');
+    }
+
+    // Luister naar de start van de nakijkronde
+    db.ref('taaltraining/status').on('value', snap => {
+        if(snap.val() === 'review' && mijnId) {
+            db.ref('taaltraining/studenten/' + mijnId).once('value', sSnap => {
+                const peerId = sSnap.val().toegewezenAan;
+                if(peerId) {
+                    db.ref('taaltraining/studenten/' + peerId).once('value', pSnap => {
+                        renderPeerReview(pSnap.val());
+                    });
+                }
+            });
+        }
+    });
+
+    function renderPeerReview(peerData) {
+        showScreen('peer-screen');
+        document.getElementById('review-naam').innerText = peerData.naam;
+        const div = document.getElementById('peer-lijst');
+        div.innerHTML = peerData.antwoorden.map((a, i) => `
+            <div class="zin-container">
+                <span class="foute-zin">Origineel: ${zinnen[i]}</span>
+                <strong>Correctie van ${peerData.naam}:</strong><br>
+                <p style="margin-top:5px;">${a}</p>
+            </div>
+        `).join('');
+    }
+
+    // Admin functies
+    function toggleAdmin() {
+        const div = document.getElementById('admin-controls');
+        div.style.display = div.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function startNakijken() {
+        db.ref('taaltraining/studenten').once('value', snap => {
+            const studenten = [];
+            snap.forEach(child => { studenten.push({id: child.key, ...child.val()}); });
+            
+            if(studenten.length < 2) return alert("Minimaal 2 studenten nodig!");
+
+            // Willekeurig verdelen (A krijgt B, B krijgt C, etc)
+            const geshuffeld = [...studenten].sort(() => Math.random() - 0.5);
+            
+            geshuffeld.forEach((student, index) => {
+                const volgendeStudent = geshuffeld[(index + 1) % geshuffeld.length];
+                db.ref('taaltraining/studenten/' + student.id).update({
+                    toegewezenAan: volgendeStudent.id
+                });
+            });
+
+            db.ref('taaltraining/status').set('review');
+        });
+    }
+
+    function wisAlles() {
+        if(confirm("Alles wissen?")) {
+            db.ref('taaltraining').set(null);
+            location.reload();
+        }
+    }
+
+    // Monitor aanmeldingen voor docent
+    db.ref('taaltraining/studenten').on('value', snap => {
+        const count = snap.numChildren();
+        document.getElementById('aanmeldingen').innerText = "Ingeleverd: " + count + " studenten";
+    });
+</script>
+
+</body>
+</html>
