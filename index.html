@@ -2,85 +2,61 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PV Oefening - Dossier Hans (Winkeldiefstal)</title>
+    <title>Politie Academie - PV Training Actief</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
     <style>
-        :root {
-            --primary-blue: #1d4e89;
-            --accent-gold: #f9d423;
-            --border-gray: #cbd5e0;
-            --bg-light: #f4f7f9;
-            --text-main: #2d3748;
-            --success-green: #28a745;
-            --danger-red: #e53e3e;
-        }
-
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: var(--bg-light); color: var(--text-main); padding: 40px 20px; line-height: 1.6; }
-        .container { max-width: 950px; margin: auto; background: white; padding: 40px; border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .header { color: var(--primary-blue); border-bottom: 3px solid var(--accent-gold); text-transform: uppercase; text-align: center; padding-bottom: 15px; margin-bottom: 30px; }
-        
-        .stap-box { border: 1px solid var(--border-gray); border-left: 5px solid var(--primary-blue); padding: 25px; margin-bottom: 25px; background: #fff; }
-        .action-button { display: inline-block; background: var(--primary-blue); color: white !important; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; text-transform: uppercase; font-size: 0.9em; margin: 5px; }
-        
-        input, textarea { width: 100%; padding: 12px; border: 1px solid var(--border-gray); border-radius: 4px; box-sizing: border-box; margin-bottom: 10px; font-family: inherit; }
-        .submit-btn { background: var(--success-green); color: white; border: none; padding: 15px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; text-transform: uppercase; }
-
-        .aangifte-kaart { border: 1px solid var(--border-gray); margin-top: 25px; padding: 25px; background: #fff; border-radius: 4px; position: relative; }
-        .tekst-weergave { white-space: pre-wrap; background: #f8fafc; padding: 20px; border: 1px solid #edf2f7; margin: 15px 0; font-size: 1em; color: #334155; border-left: 3px solid var(--accent-gold); }
-        
-        /* Feedback badges */
-        .feedback-labels { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
-        .badge { padding: 4px 10px; border-radius: 12px; font-size: 0.75em; font-weight: bold; background: #edf2f7; color: #718096; border: 1px solid #cbd5e0; }
-        .badge.active { background: var(--success-green); color: white; border-color: #1e8449; }
-
-        .feedback-display { background: #f0f7ff; border-left: 4px solid var(--primary-blue); padding: 15px; margin-top: 15px; font-size: 0.95em; }
-        .feedback-kolom { background: #fffdf2; border: 1px solid #f9d423; padding: 20px; border-radius: 4px; display: none; margin-top: 15px; }
-        
-        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
-        .secondary-btn { background: none; border: 1px solid var(--primary-blue); color: var(--primary-blue); padding: 8px 16px; cursor: pointer; font-size: 0.85em; font-weight: bold; border-radius: 4px; }
-        .all-pdf-btn { background: #4a5568; color: white; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; margin-bottom: 30px; font-weight: bold; text-transform: uppercase; }
-
-        .vinklijst { list-style: none; padding: 0; margin-bottom: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
-        .vinklijst li { font-size: 0.85em; display: flex; align-items: center; }
-        .vinklijst input { width: auto; margin-right: 10px; margin-bottom: 0; cursor: pointer; }
-
-        .admin-zone { margin-top: 80px; padding: 30px; border: 2px dashed var(--danger-red); text-align: center; background: #fff5f5; border-radius: 8px; }
-        .reset-btn { background: var(--danger-red); color: white; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
+        :root { --polblauw: #1d4e89; --goud: #f9d423; --bg: #f4f7f9; --fout: #e53e3e; --goed: #28a745; --tekst: #2d3748; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 20px; color: var(--tekst); }
+        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .screen { display: none; }
+        .active { display: block; }
+        .zin-container { margin-bottom: 20px; padding: 15px; border-left: 5px solid var(--polblauw); background: #f8fafc; border-radius: 4px; }
+        .is-goed { border-left-color: var(--goed) !important; background: #f0fff4; }
+        .is-fout { border-left-color: var(--fout) !important; background: #fff5f5; }
+        input[type="text"] { width: 100%; padding: 12px; margin-top: 10px; border: 1px solid #cbd5e0; border-radius: 4px; box-sizing: border-box; }
+        .btn-main { background: var(--polblauw); color: white; width: 100%; padding: 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 1.1em; }
+        .btn-check { padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; flex: 1; }
+        .sleutel-box { margin-top: 10px; padding: 10px; background: #e2e8f0; border-radius: 4px; display: none; font-weight: bold; }
+        .admin-zone { margin-top: 40px; padding: 20px; border: 2px dashed var(--polblauw); background: #f0f7ff; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header"><h1>Dossier: Winkeldiefstal Hans</h1></div>
-
-    <div class="stap-box">
-        <h3>1. Informatieverzameling & Bewijs</h3>
-        <p>Hoor de aangever Hans uit en bekijk de camerabeelden voor details.</p>
-        <center>
-            <a href="https://gemini.google.com/gem/2ba817b11a77" target="_blank" class="action-button">Start verhoor (Hans)</a>
-            <a href="https://raw.githubusercontent.com/padocentdebie/Q2les4aangiftewinkeldiefstal/main/Gemini_Generated_Image_dsm0t7dsm0t7dsm0.png" target="_blank" class="action-button" style="background:#4a5568;">📸 Camerabeelden</a>
-        </center>
+    <div id="login-screen" class="screen active">
+        <h1 style="color:var(--polblauw); text-align:center;">PV-Training OVT</h1>
+        <p style="text-align:center;">Herschrijf de voltooide zinnen naar de <strong>actieve verleden tijd</strong>.</p>
+        <input type="text" id="student-naam" placeholder="Naam Verbalisant">
+        <button onclick="startTraining()" class="btn-main" style="margin-top:20px;">START TRAINING</button>
     </div>
 
-    <div class="stap-box">
-        <h3>2. Proces-Verbaal Inleveren</h3>
-        <input type="text" id="student-naam" placeholder="Je naam (verbalisant)">
-        <textarea id="input-tekst" placeholder="Typ hier de officiële aangifte tekst (ik-vorm, OVT)..." style="height: 150px;"></textarea>
-        <button class="submit-btn" onclick="verstuurData()">Publiceer voor de klas</button>
+    <div id="input-screen" class="screen">
+        <h2>Dossier Verwerking</h2>
+        <div id="vragen-lijst"></div>
+        <button onclick="verstuurZinnen()" class="btn-main">INLEVEREN</button>
     </div>
 
-    <h2 style="color: var(--primary-blue); margin-top: 50px;">Live Feed</h2>
-    <button class="all-pdf-btn" onclick="downloadAllePDFs()">Download Alle PV's als PDF</button>
-    
-    <div id="live-feed">Wachten op inzendingen...</div>
+    <div id="wait-screen" class="screen">
+        <h2 style="text-align:center;">Ingeleverd</h2>
+        <p style="text-align:center;">Wacht op de docent voor de controle-fase.</p>
+    </div>
+
+    <div id="peer-screen" class="screen">
+        <h2>Controle: <span id="review-naam"></span></h2>
+        <div id="peer-lijst"></div>
+    </div>
 
     <div class="admin-zone">
-        <h3 style="color: var(--danger-red); margin-top: 0;">Beheer</h3>
-        <button class="reset-btn" onclick="wisAlles()">Sessie Volledig Resetten</button>
+        <h4>Dashboard</h4>
+        <button onclick="activeerNakijken()" style="background:var(--goed); color:white; padding:10px; border:none; border-radius:4px; cursor:pointer;">START NAKIJKEN</button>
+        <button onclick="wisAlles()" style="background:var(--fout); color:white; padding:10px; border:none; border-radius:4px; cursor:pointer; margin-left:10px;">RESET</button>
+        <table>
+            <thead><tr><th>Naam</th><th>Score</th></tr></thead>
+            <tbody id="score-body"></tbody>
+        </table>
     </div>
 </div>
 
@@ -96,116 +72,36 @@
     };
 
     firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+    const db = firebase.database();
 
-    function verstuurData() {
-        const naam = document.getElementById('student-naam').value;
-        const tekst = document.getElementById('input-tekst').value;
-        if(!naam || !tekst) return alert("Naam en tekst zijn verplicht.");
+    const zinnenPool = [
+        {fout: "De dader heeft de tas weggenomen.", goed: "De dader nam de tas weg."},
+        {fout: "De agent heeft de verdachte gefouilleerd.", goed: "De agent fouilleerde de verdachte."},
+        {fout: "De recherche heeft de beelden geanalyseerd.", goed: "De recherche analyseerde de beelden."},
+        {fout: "De getuige heeft de dader herkend.", goed: "De getuige herkende de dader."},
+        {fout: "De verdachte heeft de diefstal ontkend.", goed: "De verdachte ontkende de diefstal."},
+        {fout: "De verbalisant heeft de rechten voorgelezen.", goed: "De verbalisant las de rechten voor."},
+        {fout: "De inbreker is via het dak geklommen.", goed: "De inbreker klom via het dak."},
+        {fout: "De agent heeft de weg afgezet.", goed: "De agent zette de weg af."},
+        {fout: "De politie heeft het bewijs veiliggesteld.", goed: "De politie stelde het bewijs veilig."},
+        {fout: "De dader is via de achterdeur gevlucht.", goed: "De dader vluchtte via de achterdeur."},
+        {fout: "De agent heeft de ruzie gesust.", goed: "De agent suste de ruzie."},
+        {fout: "De officier heeft het rapport getekend.", goed: "De officier tekende het rapport."},
+        {fout: "De eenheid heeft de dader achtervolgd.", goed: "De eenheid achtervolgde de dader."},
+        {fout: "De inbreker heeft de kluis gekraakt.", goed: "De inbreker kraakte de kluis."},
+        {fout: "De verbalisant heeft de aangifte getypt.", goed: "De verbalisant typte de aangifte."},
+        {fout: "De agent heeft de situatie ingeschat.", goed: "De agent schatte de situatie in."},
+        {fout: "De agent heeft zijn wapen getrokken.", goed: "De agent trok zijn wapen."},
+        {fout: "De recherche heeft de sporen gezocht.", goed: "De recherche zocht de sporen."},
+        {fout: "De verdachte heeft de wet overtreden.", goed: "De verdachte overtrad de wet."},
+        {fout: "De dader is over het hek gesprongen.", goed: "De dader sprong over het hek."},
+        {fout: "De verdachte heeft de ruit gebroken.", goed: "De verdachte brak de ruit."},
+        {fout: "De dief is door de mand gevallen.", goed: "De dief viel door de mand."},
+        {fout: "De agent heeft de dader gegrepen.", goed: "De agent greep de dader."},
+        {fout: "De verdachte heeft de agent bedreigd.", goed: "De verdachte bedreigde de agent."},
+        {fout: "De recherche heeft de beelden bekeken.", goed: "De recherche bekeek de beelden."}
+    ];
 
-        database.ref('aangiftes').push({
-            naam: naam,
-            tekst: tekst,
-            feedback: { v1:false, v2:false, v3:false, v4:false, v5:false, v6:false, opmerking: "" }
-        });
-        document.getElementById('input-tekst').value = '';
-        document.getElementById('student-naam').value = '';
-    }
-
-    function saveFeedback(key) {
-        const nieuweOpm = document.getElementById('opm-' + key).value;
-        const fbRef = database.ref('aangiftes/' + key + '/feedback');
-        
-        fbRef.once('value').then((snapshot) => {
-            const huidigeData = snapshot.val() || {};
-            const oudeTekst = huidigeData.opmerking || "";
-            
-            let samengevoegdeTekst = oudeTekst;
-            if(nieuweOpm.trim()) {
-                samengevoegdeTekst = oudeTekst ? oudeTekst + "\n---\n" + nieuweOpm : nieuweOpm;
-            }
-
-            const updates = {
-                opmerking: samengevoegdeTekst,
-                v1: document.getElementById('v1-'+key).checked,
-                v2: document.getElementById('v2-'+key).checked,
-                v3: document.getElementById('v3-'+key).checked,
-                v4: document.getElementById('v4-'+key).checked,
-                v5: document.getElementById('v5-'+key).checked,
-                v6: document.getElementById('v6-'+key).checked
-            };
-
-            return fbRef.update(updates);
-        }).then(() => {
-            alert("Beoordeling bijgewerkt.");
-            document.getElementById('opm-' + key).value = '';
-            toggleFB(key);
-        });
-    }
-
-    database.ref('aangiftes').on('value', (snapshot) => {
-        const feed = document.getElementById('live-feed');
-        feed.innerHTML = '';
-        const data = snapshot.val();
-        if (data) {
-            Object.keys(data).reverse().forEach(key => {
-                const item = data[key];
-                const fb = item.feedback || {};
-                const kaart = document.createElement('div');
-                kaart.className = 'aangifte-kaart';
-                
-                const labels = [
-                    {id: 'v1', txt: '7 W\'s'}, {id: 'v2', txt: 'Ik-vorm'}, 
-                    {id: 'v3', txt: 'OVT'}, {id: 'v4', txt: 'Zakelijk'}, 
-                    {id: 'v5', txt: 'Wetenschap'}, {id: 'v6', txt: 'Compleet'}
-                ];
-
-                let labelHtml = labels.map(l => `<span class="badge ${fb[l.id] ? 'active' : ''}">${l.txt}</span>`).join('');
-                const geformatteerdeFeedback = fb.opmerking ? fb.opmerking.replace(/\n/g, '<br>') : 'Geen opmerkingen.';
-
-                kaart.innerHTML = `
-                    <div class="pv-content">
-                        <strong style="color:var(--primary-blue);">Verbalisant: ${item.naam}</strong>
-                        <div class="tekst-weergave">${item.tekst}</div>
-                        
-                        <div class="feedback-labels">${labelHtml}</div>
-
-                        <div class="feedback-display">
-                            <strong>Docentenfeedback:</strong>
-                            <div>${geformatteerdeFeedback}</div>
-                        </div>
-                        
-                        <div class="btn-group">
-                            <button class="secondary-btn" onclick="toggleFB('${key}')">Beoordelen / Aanvinken</button>
-                        </div>
-                    </div>
-
-                    <div class="feedback-kolom" id="fb-${key}">
-                        <ul class="vinklijst">
-                            ${labels.map(l => `<li><input type="checkbox" id="${l.id}-${key}" ${fb[l.id]?'checked':''}> ${l.txt}</li>`).join('')}
-                        </ul>
-                        <textarea id="opm-${key}" placeholder="Nieuwe opmerking toevoegen..." style="height:60px;"></textarea>
-                        <button class="submit-btn" style="padding:10px;" onclick="saveFeedback('${key}')">Opslaan</button>
-                    </div>
-                `;
-                feed.appendChild(kaart);
-            });
-        }
-    });
-
-    function toggleFB(id) {
-        const el = document.getElementById('fb-' + id);
-        el.style.display = (el.style.display === 'block') ? 'none' : 'block';
-    }
-
-    function downloadAllePDFs() {
-        const element = document.getElementById('live-feed');
-        html2pdf().set({ margin: 10, filename: 'Dossier_Hans_Feedback.pdf', jsPDF: { unit: 'mm', format: 'a4' } }).from(element).save();
-    }
-
-    function wisAlles() {
-        if(confirm("Alles wissen?")) database.ref('aangiftes').set(null);
-    }
-</script>
-</body>
-</html>
+    let mijnSelectie = [];
+    let mijnId = "";
+    let peerIdScore
