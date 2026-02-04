@@ -7,8 +7,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
         :root { --polblauw: #1d4e89; --goud: #f9d423; --bg: #f4f7f9; --fout: #e53e3e; --goed: #28a745; --tekst: #2d3748; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 20px; color: var(--tekst); }
-        .container { max-width: 950px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 20px; color: var(--tekst); margin: 0; }
+        .container { max-width: 950px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: relative; }
         .header-img { width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px; margin-bottom: 20px; border: 2px solid var(--polblauw); }
         .screen { display: none; }
         .active { display: block; }
@@ -23,12 +23,39 @@
         table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; }
         th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
         th { background: var(--polblauw); color: white; }
+
+        /* WHITEBOARD STYLES */
+        #whiteboard-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 1000; flex-direction: column; }
+        .wb-toolbar { background: var(--polblauw); padding: 10px; display: flex; gap: 10px; align-items: center; color: white; }
+        #wb-canvas { flex-grow: 1; cursor: crosshair; touch-action: none; background: #fff; }
+        .wb-btn { padding: 5px 12px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; }
+        .color-dot { width: 25px; height: 25px; border-radius: 50%; border: 2px solid white; cursor: pointer; }
+        .text-input { position: absolute; background: transparent; border: 1px dashed #ccc; outline: none; font-size: 20px; padding: 5px; min-width: 50px; }
     </style>
 </head>
 <body>
 
+<div id="whiteboard-overlay">
+    <div class="wb-toolbar">
+        <button class="wb-btn" onclick="setWbMode('draw')" id="wb-draw-btn">✏️ Stift</button>
+        <button class="wb-btn" onclick="setWbMode('text')" id="wb-text-btn">⌨️ Tekst</button>
+        <div style="width: 2px; height: 25px; background: rgba(255,255,255,0.3);"></div>
+        <div class="color-dot" onclick="setWbColor('#1d4e89')" style="background: #1d4e89;"></div>
+        <div class="color-dot" onclick="setWbColor('#e53e3e')" style="background: #e53e3e;"></div>
+        <div class="color-dot" onclick="setWbColor('#28a745')" style="background: #28a745;"></div>
+        <div class="color-dot" onclick="setWbColor('#000000')" style="background: #000000;"></div>
+        <button class="wb-btn" onclick="clearWb()" style="background:#f4f7f9; color: #333; margin-left: auto;">🗑️ Wis</button>
+        <button class="wb-btn" onclick="closeWb()" style="background:var(--fout); color: white;">❌ Sluit</button>
+    </div>
+    <div style="position: relative; flex-grow: 1;" id="wb-container">
+        <canvas id="wb-canvas"></canvas>
+    </div>
+</div>
+
 <div class="container">
     <div id="login-screen" class="screen active">
+        <button onclick="openWb()" style="position: absolute; right: 10px; top: 10px; padding: 10px; background: var(--goud); border: none; border-radius: 4px; font-weight: bold; cursor: pointer; z-index: 5;">🖥️ OPEN DIGIBORD</button>
+        
         <img src="https://github.com/padocentdebie/Q2PVAangifteles4/blob/main/giphy%20(4).gif?raw=true" alt="Politie Training" class="header-img">
         <h1 style="color:var(--polblauw); text-align:center;">PV-Training: Actief Schrijven (OVT)</h1>
         <p style="text-align:center;">Herschrijf de voltooide zinnen naar de <strong>actieve verleden tijd</strong>.</p>
@@ -79,6 +106,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    // Pool met zinnen (ingekort voor de leesbaarheid van de code, maar blijft 100 in jouw versie)
     const zinnenPool = [
         {fout: "De dader heeft de tas weggenomen.", goed: "De dader nam de tas weg."},
         {fout: "De agent heeft de verdachte gefouilleerd.", goed: "De agent fouilleerde de verdachte."},
@@ -186,6 +214,60 @@
     let peerIdScore = "";
     let lokaleScore = 0;
 
+    // --- WHITEBOARD LOGICA ---
+    const wbCanvas = document.getElementById('wb-canvas');
+    const wbCtx = wbCanvas.getContext('2d');
+    const wbContainer = document.getElementById('wb-container');
+    let wbDrawing = false;
+    let wbMode = 'draw';
+    let wbColor = '#1d4e89';
+
+    function openWb() { 
+        document.getElementById('whiteboard-overlay').style.display = 'flex'; 
+        wbCanvas.width = window.innerWidth;
+        wbCanvas.height = window.innerHeight - 50;
+    }
+    function closeWb() { document.getElementById('whiteboard-overlay').style.display = 'none'; }
+    function setWbMode(m) { wbMode = m; }
+    function setWbColor(c) { wbColor = c; }
+    function clearWb() { 
+        wbCtx.clearRect(0, 0, wbCanvas.width, wbCanvas.height); 
+        wbContainer.querySelectorAll('.text-input').forEach(el => el.remove());
+    }
+
+    wbCanvas.addEventListener('mousedown', startWbAction);
+    wbCanvas.addEventListener('mousemove', drawWb);
+    wbCanvas.addEventListener('mouseup', () => wbDrawing = false);
+
+    function startWbAction(e) {
+        if(wbMode === 'draw') {
+            wbDrawing = true;
+            wbCtx.beginPath();
+            wbCtx.moveTo(e.clientX, e.clientY - 50);
+            wbCtx.strokeStyle = wbColor;
+            wbCtx.lineWidth = 3;
+        } else {
+            addWbText(e.clientX, e.clientY - 50);
+        }
+    }
+    function drawWb(e) {
+        if(!wbDrawing) return;
+        wbCtx.lineTo(e.clientX, e.clientY - 50);
+        wbCtx.stroke();
+    }
+    function addWbText(x, y) {
+        const input = document.createElement('div');
+        input.contentEditable = true;
+        input.className = 'text-input';
+        input.style.left = x + 'px';
+        input.style.top = y + 'px';
+        input.style.color = wbColor;
+        wbContainer.appendChild(input);
+        setTimeout(() => input.focus(), 10);
+        input.addEventListener('blur', () => { if(!input.innerText.trim()) input.remove(); });
+    }
+
+    // --- TRAINING LOGICA ---
     function startTraining() {
         const naam = document.getElementById('student-naam').value;
         if(!naam) return alert("Voer een naam in.");
