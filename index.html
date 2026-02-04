@@ -37,14 +37,12 @@
 
 <div id="whiteboard-overlay">
     <div class="wb-toolbar">
-        <button class="wb-btn" onclick="setWbMode('draw')" id="wb-draw-btn">✏️ Stift</button>
-        <button class="wb-btn" onclick="setWbMode('text')" id="wb-text-btn">⌨️ Tekst</button>
-        <div style="width: 2px; height: 25px; background: rgba(255,255,255,0.3);"></div>
+        <button class="wb-btn" onclick="setWbMode('draw')">✏️ Stift</button>
+        <button class="wb-btn" onclick="setWbMode('text')">⌨️ Tekst</button>
         <div class="color-dot" onclick="setWbColor('#1d4e89')" style="background: #1d4e89;"></div>
         <div class="color-dot" onclick="setWbColor('#e53e3e')" style="background: #e53e3e;"></div>
         <div class="color-dot" onclick="setWbColor('#28a745')" style="background: #28a745;"></div>
-        <div class="color-dot" onclick="setWbColor('#000000')" style="background: #000000;"></div>
-        <button class="wb-btn" onclick="clearWb()" style="background:#f4f7f9; color: #333; margin-left: auto;">🗑️ Wis</button>
+        <button class="wb-btn" onclick="clearWb()" style="background:#ddd; color: #333; margin-left: auto;">🗑️ Wis</button>
         <button class="wb-btn" onclick="closeWb()" style="background:var(--fout); color: white;">❌ Sluit</button>
     </div>
     <div style="position: relative; flex-grow: 1;" id="wb-container">
@@ -54,11 +52,9 @@
 
 <div class="container">
     <div id="login-screen" class="screen active">
-        <button onclick="openWb()" style="position: absolute; right: 10px; top: 10px; padding: 10px; background: var(--goud); border: none; border-radius: 4px; font-weight: bold; cursor: pointer; z-index: 5;">🖥️ OPEN DIGIBORD</button>
-        
+        <button onclick="openWb()" style="position: absolute; right: 10px; top: 10px; padding: 10px; background: var(--goud); border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">🖥️ OPEN DIGIBORD</button>
         <img src="https://github.com/padocentdebie/Q2PVAangifteles4/blob/main/giphy%20(4).gif?raw=true" alt="Politie Training" class="header-img">
-        <h1 style="color:var(--polblauw); text-align:center;">PV-Training: Actief Schrijven (OVT)</h1>
-        <p style="text-align:center;">Herschrijf de voltooide zinnen naar de <strong>actieve verleden tijd</strong>.</p>
+        <h1 style="color:var(--polblauw); text-align:center;">PV-Training: Actief Schrijven</h1>
         <input type="text" id="student-naam" placeholder="Naam Verbalisant">
         <button onclick="startTraining()" class="btn-main" style="margin-top:20px;">START TRAINING (25 ZINNEN)</button>
     </div>
@@ -75,16 +71,14 @@
     </div>
 
     <div id="peer-screen" class="screen">
-        <h2>Controleer Dossier: <span id="review-naam"></span></h2>
+        <h2>Controleer Dossier van: <span id="review-naam"></span></h2>
         <div id="peer-lijst"></div>
     </div>
 
     <div class="admin-zone">
         <h4>Instructeur Dashboard</h4>
-        <div style="margin-bottom:15px;">
-            <button onclick="activeerNakijken()" style="background:var(--goed); color:white; padding:12px 20px; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">START PEER-REVIEW</button>
-            <button onclick="wisAlles()" style="background:var(--fout); color:white; padding:12px 20px; border:none; border-radius:4px; cursor:pointer; font-weight:bold; margin-left:10px;">RESET SESSIE</button>
-        </div>
+        <button onclick="activeerNakijken()" style="background:var(--goed); color:white; padding:10px; border:none; border-radius:4px; cursor:pointer;">START PEER-REVIEW</button>
+        <button onclick="wisAlles()" style="background:var(--fout); color:white; padding:10px; border:none; border-radius:4px; cursor:pointer; margin-left:10px;">RESET SESSIE</button>
         <table>
             <thead><tr><th>Verbalisant</th><th>Score</th><th>Status</th></tr></thead>
             <tbody id="score-body"></tbody>
@@ -102,11 +96,9 @@
         messagingSenderId: "8681998187",
         appId: "1:8681998187:web:fd08067494a010dc572e2e"
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Pool met zinnen (ingekort voor de leesbaarheid van de code, maar blijft 100 in jouw versie)
     const zinnenPool = [
         {fout: "De dader heeft de tas weggenomen.", goed: "De dader nam de tas weg."},
         {fout: "De agent heeft de verdachte gefouilleerd.", goed: "De agent fouilleerde de verdachte."},
@@ -214,7 +206,7 @@
     let peerIdScore = "";
     let lokaleScore = 0;
 
-    // --- WHITEBOARD LOGICA ---
+    // WHITEBOARD FUNCTIES
     const wbCanvas = document.getElementById('wb-canvas');
     const wbCtx = wbCanvas.getContext('2d');
     const wbContainer = document.getElementById('wb-container');
@@ -235,49 +227,42 @@
         wbContainer.querySelectorAll('.text-input').forEach(el => el.remove());
     }
 
-    wbCanvas.addEventListener('mousedown', startWbAction);
-    wbCanvas.addEventListener('mousemove', drawWb);
-    wbCanvas.addEventListener('mouseup', () => wbDrawing = false);
-
-    function startWbAction(e) {
+    wbCanvas.addEventListener('mousedown', (e) => {
         if(wbMode === 'draw') {
             wbDrawing = true;
             wbCtx.beginPath();
             wbCtx.moveTo(e.clientX, e.clientY - 50);
             wbCtx.strokeStyle = wbColor;
             wbCtx.lineWidth = 3;
+            wbCtx.lineCap = 'round';
         } else {
-            addWbText(e.clientX, e.clientY - 50);
+            const input = document.createElement('div');
+            input.contentEditable = true;
+            input.className = 'text-input';
+            input.style.left = e.clientX + 'px';
+            input.style.top = (e.clientY - 50) + 'px';
+            input.style.color = wbColor;
+            wbContainer.appendChild(input);
+            setTimeout(() => input.focus(), 10);
         }
-    }
-    function drawWb(e) {
+    });
+    wbCanvas.addEventListener('mousemove', (e) => {
         if(!wbDrawing) return;
         wbCtx.lineTo(e.clientX, e.clientY - 50);
         wbCtx.stroke();
-    }
-    function addWbText(x, y) {
-        const input = document.createElement('div');
-        input.contentEditable = true;
-        input.className = 'text-input';
-        input.style.left = x + 'px';
-        input.style.top = y + 'px';
-        input.style.color = wbColor;
-        wbContainer.appendChild(input);
-        setTimeout(() => input.focus(), 10);
-        input.addEventListener('blur', () => { if(!input.innerText.trim()) input.remove(); });
-    }
+    });
+    wbCanvas.addEventListener('mouseup', () => wbDrawing = false);
 
-    // --- TRAINING LOGICA ---
+    // TRAINING FUNCTIES
     function startTraining() {
         const naam = document.getElementById('student-naam').value;
-        if(!naam) return alert("Voer een naam in.");
+        if(!naam) return alert("Voer je naam in.");
         mijnSelectie = Array.from(Array(zinnenPool.length).keys()).sort(() => Math.random() - 0.5).slice(0, 25);
         showScreen('input-screen');
-        const div = document.getElementById('vragen-lijst');
-        div.innerHTML = mijnSelectie.map(i => `
+        document.getElementById('vragen-lijst').innerHTML = mijnSelectie.map(i => `
             <div class="zin-container">
-                <p style="color:var(--polblauw); font-weight:bold;">VOLTOOID: ${zinnenPool[i].fout}</p>
-                <input type="text" id="zin-${i}" autocomplete="off" placeholder="Herschrijf naar actieve verleden tijd...">
+                <p><strong>VOLTOOID:</strong> ${zinnenPool[i].fout}</p>
+                <input type="text" id="zin-${i}" placeholder="Verleden tijd...">
             </div>
         `).join('');
     }
@@ -290,78 +275,65 @@
             antwoorden: antwoorden,
             mijnSelectie: mijnSelectie,
             score: 0,
-            status: "Ingeleverd"
+            status: "Wacht op review"
         }).then(ref => { mijnId = ref.key; showScreen('wait-screen'); });
     }
+
+    function activeerNakijken() {
+        db.ref('taaltraining/studenten').once('value', snap => {
+            let ids = []; snap.forEach(c => ids.push(c.key));
+            if (ids.length < 2) return alert("Nodig minimaal 2 studenten uit.");
+            let shuf = [...ids].sort(() => Math.random() - 0.5);
+            shuf.forEach((id, i) => {
+                db.ref('taaltraining/studenten/' + id).update({ toegewezenAan: shuf[(i + 1) % shuf.length] });
+            });
+            db.ref('taaltraining/status').set('review');
+        });
+    }
+
+    db.ref('taaltraining/status').on('value', snap => {
+        if(snap.val() === 'review' && mijnId) {
+            db.ref('taaltraining/studenten/' + mijnId).once('value', s => {
+                const targetId = s.val().toegewezenAan;
+                db.ref('taaltraining/studenten/' + targetId).once('value', p => {
+                    peerIdScore = targetId;
+                    showScreen('peer-screen');
+                    document.getElementById('review-naam').innerText = p.val().naam;
+                    document.getElementById('peer-lijst').innerHTML = p.val().mijnSelectie.map(idx => `
+                        <div class="zin-container">
+                            <p><strong>ANTWOORD:</strong> ${p.val().antwoorden[idx]}</p>
+                            <button class="btn-check" style="background:var(--goed);" onclick="beoordeel(this, 'goed')">GOED</button>
+                            <button class="btn-check" style="background:var(--fout);" onclick="beoordeel(this, 'fout')">FOUT</button>
+                            <div class="sleutel-box">Sleutel: ${zinnenPool[idx].goed}</div>
+                        </div>
+                    `).join('');
+                });
+            });
+        }
+    });
 
     function beoordeel(btn, type) {
         const container = btn.closest('.zin-container');
         if(container.dataset.beoordeeld) return;
         container.dataset.beoordeeld = "true";
-        if(type === 'goed') { lokaleScore++; container.classList.add('is-goed'); } 
-        else { container.classList.add('is-fout'); }
+        if(type === 'goed') { lokaleScore++; container.classList.add('is-goed'); } else { container.classList.add('is-fout'); }
         container.querySelector('.sleutel-box').style.display = 'block';
         db.ref('taaltraining/studenten/' + peerIdScore).update({ score: lokaleScore });
-    }
-
-    function renderPeer(pData, pKey) {
-        peerIdScore = pKey;
-        lokaleScore = 0;
-        showScreen('peer-screen');
-        document.getElementById('review-naam').innerText = pData.naam;
-        const div = document.getElementById('peer-lijst');
-        div.innerHTML = pData.mijnSelectie.map(idx => `
-            <div class="zin-container">
-                <span style="font-size:0.8em; color:gray;">BRON: ${zinnenPool[idx].fout}</span>
-                <p style="margin:10px 0; font-weight:bold;">ANTWOORD: ${pData.antwoorden[idx] || '[Leeg]'}</p>
-                <div style="display:flex; gap:10px;">
-                    <button class="btn-check" style="background:var(--goed);" onclick="beoordeel(this, 'goed')">GOED</button>
-                    <button class="btn-check" style="background:var(--fout);" onclick="beoordeel(this, 'fout')">FOUT</button>
-                </div>
-                <div class="sleutel-box">Sleutel: ${zinnenPool[idx].goed}</div>
-            </div>
-        `).join('');
     }
 
     db.ref('taaltraining/studenten').on('value', snap => {
         const body = document.getElementById('score-body');
         body.innerHTML = "";
         snap.forEach(c => {
-            const s = c.val();
-            body.innerHTML += `<tr><td>${s.naam}</td><td><strong>${s.score} / 25</strong></td><td>${s.status}</td></tr>`;
+            body.innerHTML += `<tr><td>${c.val().naam}</td><td>${c.val().score} / 25</td><td>${c.val().status}</td></tr>`;
         });
     });
-
-    db.ref('taaltraining/status').on('value', snap => {
-        if(snap.val() === 'review' && mijnId) {
-            db.ref('taaltraining/studenten/' + mijnId).once('value', s => {
-                const targetId = s.val().toegewezenAan;
-                db.ref('taaltraining/studenten/' + targetId).once('value', p => renderPeer(p.val(), p.key));
-            });
-        }
-    });
-
-    function activeerNakijken() {
-        db.ref('taaltraining/studenten').once('value', snap => {
-            let ids = []; snap.forEach(c => ids.push(c.key));
-            if (ids.length < 2) return alert("Minimaal 2 studenten nodig.");
-            let shuf = [...ids].sort(() => Math.random() - 0.5);
-            shuf.forEach((id, i) => {
-                db.ref('taaltraining/studenten/' + id).update({ 
-                    toegewezenAan: shuf[(i + 1) % shuf.length],
-                    status: "Nalezen..."
-                });
-            });
-            db.ref('taaltraining/status').set('review');
-        });
-    }
 
     function showScreen(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
     }
-
-    function wisAlles() { if(confirm("Data wissen?")) db.ref('taaltraining').set(null).then(() => location.reload()); }
+    function wisAlles() { if(confirm("Data resetten?")) db.ref('taaltraining').set(null).then(() => location.reload()); }
 </script>
 </body>
 </html>
