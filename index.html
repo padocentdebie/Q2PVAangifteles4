@@ -2,80 +2,74 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>Politie Academie - Master Controle Paneel</title>
+    <title>Politie Academie - PV Training OVT</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
         :root { --polblauw: #1d4e89; --goud: #f9d423; --bg: #f4f7f9; --fout: #e53e3e; --goed: #28a745; --tekst: #2d3748; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 20px; color: var(--tekst); }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 20px; color: var(--tekst); line-height: 1.6; }
         .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         h1, h2 { color: var(--polblauw); text-align: center; border-bottom: 3px solid var(--goud); padding-bottom: 10px; }
         .screen { display: none; }
         .active { display: block; }
-        .zin-container { margin-bottom: 20px; padding: 15px; border-left: 5px solid var(--polblauw); background: #f8fafc; }
+        .zin-container { margin-bottom: 20px; padding: 15px; border-left: 5px solid var(--polblauw); background: #f8fafc; border-radius: 0 4px 4px 0; }
         .is-goed { border-left-color: var(--goed) !important; background: #f0fff4; }
         .is-fout { border-left-color: var(--fout) !important; background: #fff5f5; }
-        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
-        .btn-check { padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; flex: 1; }
-        .sleutel-box { margin-top: 10px; padding: 10px; background: #e2e8f0; border-radius: 4px; display: none; font-size: 0.9em; }
-        .eindrapport { background: var(--polblauw); color: white; padding: 25px; border-radius: 8px; text-align: center; margin-top: 30px; }
-        
-        /* Docent Tabel */
-        .admin-table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
-        .admin-table th, .admin-table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        .opdracht-label { color: var(--fout); font-weight: bold; font-size: 0.9em; display: block; margin-bottom: 5px; }
+        input[type="text"] { width: 100%; padding: 12px; border: 1px solid #cbd5e0; border-radius: 4px; box-sizing: border-box; font-size: 1em; }
+        .btn-group { display: flex; gap: 10px; margin-top: 12px; }
+        .btn-check { padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; flex: 1; transition: 0.2s; }
+        .btn-check:hover { opacity: 0.8; }
+        .sleutel-box { margin-top: 10px; padding: 10px; background: #e2e8f0; border-radius: 4px; display: none; border: 1px solid #cbd5e0; font-weight: 500; }
+        .admin-zone { margin-top: 50px; padding: 20px; border: 2px dashed var(--polblauw); background: #f0f7ff; border-radius: 8px; }
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; }
+        .admin-table th, .admin-table td { border: 1px solid #cbd5e0; padding: 10px; text-align: left; }
         .admin-table th { background: var(--polblauw); color: white; }
-        .admin-zone { margin-top: 60px; padding: 20px; border: 2px dashed var(--polblauw); border-radius: 8px; background: #ebf8ff; }
+        .btn-main { background: var(--polblauw); color: white; width: 100%; padding: 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 1.1em; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="login-screen" class="screen active">
-        <h1>Taalcheck Verbalisanten</h1>
-        <input type="text" id="student-naam" style="width:100%; padding:12px;" placeholder="Naam verbalisant">
-        <button onclick="login()" style="background:var(--polblauw); color:white; width:100%; padding:15px; border:none; border-radius:4px; cursor:pointer; margin-top:10px; font-weight:bold;">START DOSSIER</button>
+        <h1>PV-Training: Actief Schrijven</h1>
+        <p style="text-align:center;">Zet de zinnen om naar de actieve verleden tijd (OVT).<br>Let op: stam+de, stam+te of klankverandering.</p>
+        <input type="text" id="student-naam" placeholder="Naam Verbalisant">
+        <button onclick="login()" class="btn-main" style="margin-top:20px;">START TRAINING</button>
     </div>
 
     <div id="input-screen" class="screen">
-        <h2>Dossier Invoeren</h2>
+        <h2>Dossier Verwerking</h2>
         <div id="vragen-lijst"></div>
-        <button onclick="verstuurZinnen()" style="background:var(--polblauw); color:white; width:100%; padding:15px; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">INLEVEREN</button>
+        <button onclick="verstuurZinnen()" class="btn-main">DOSSIER INLEVEREN</button>
     </div>
 
     <div id="wait-screen" class="screen">
-        <h2 style="text-align:center;">Dossier verzonden</h2>
-        <p style="text-align:center;">Wacht op de herverdeling door de docent.</p>
+        <h2 style="text-align:center;">Dossier Verstuurd</h2>
+        <p style="text-align:center;">Wacht op de docent voor de controle-fase.</p>
     </div>
 
     <div id="peer-screen" class="screen">
-        <h2>Controle: Dossier van <span id="review-naam"></span></h2>
+        <h2>Controle: Dossier van <span id="review-naam" style="color:var(--polblauw)"></span></h2>
+        <p>Beoordeel of de collega de zin correct heeft omgezet naar de actieve verleden tijd.</p>
         <div id="peer-lijst"></div>
-        <div id="eindrapport" class="eindrapport" style="display:none;">
-            <h3>Resultaat verwerkt</h3>
-            <p>Je hebt de score van je collega doorgegeven aan het systeem.</p>
-        </div>
     </div>
 
     <div class="admin-zone">
-        <h3>Docenten Paneel (Projecteer dit scherm)</h3>
-        <button onclick="startNakijken()" style="background:var(--goed); color:white; padding:10px; border:none; cursor:pointer; width:48%;">VERDEEL DOSSIERS</button>
-        <button onclick="wisAlles()" style="background:var(--fout); color:white; padding:10px; border:none; cursor:pointer; width:48%;">SESSERESET</button>
-        
+        <h4 style="margin:0 0 10px 0;">Docenten Dashboard (Projectie)</h4>
+        <div style="display:flex; gap:10px;">
+            <button onclick="startNakijken()" style="background:var(--goed); color:white; flex:1; padding:12px; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">START NAKIJKEN</button>
+            <button onclick="wisAlles()" style="background:var(--fout); color:white; flex:1; padding:12px; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">RESET SESSIE</button>
+        </div>
         <table class="admin-table">
-            <thead>
-                <tr>
-                    <th>Verbalisant</th>
-                    <th>Status</th>
-                    <th>Score (Correct/25)</th>
-                </tr>
-            </thead>
-            <tbody id="score-body">
-                </tbody>
+            <thead><tr><th>Verbalisant</th><th>Voortgang / Score</th></tr></thead>
+            <tbody id="score-body"></tbody>
         </table>
     </div>
 </div>
 
 <script>
+    // Firebase Config
     const firebaseConfig = {
         apiKey: "AIzaSyBj8dXkl1rEfyx54_MDy_tYd2P7kAeU8VQ",
         authDomain: "q2les3samirgem.firebaseapp.com",
@@ -89,96 +83,50 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Voeg hier je 100 zinnen toe zoals in de vorige stap
-    const zinnenPool = [const zinnenPool = [
-    {fout: "De verdachte is direct na de melding aangehoude.", goed: "De verdachte is direct na de melding aangehouden."},
-    {fout: "Het slachtoffer heeft gisteren aangifte gedaan.", goed: "Het slachtoffer heeft gisteren aangifte gedaan."},
-    {fout: "De recherche heeft de camerabeelden geanalyseert.", goed: "De recherche heeft de camerabeelden geanalyseerd."},
-    {fout: "Heeft de getuige de dader herkent?", goed: "Heeft de getuige de dader herkend?"},
-    {fout: "De gestolen auto is in de sloot vonden.", goed: "De gestolen auto is in de sloot gevonden."},
-    {fout: "De verbalisant heeft de rechten voorelezen.", goed: "De verbalisant heeft de rechten voorgelezen."},
-    {fout: "Er is een verboden wapen ontdekken.", goed: "Er is een verboden wapen ontdekt."},
-    {fout: "De agent heeft de weg urenlang afzet.", goed: "De agent heeft de weg urenlang afgezet."},
-    {fout: "Het rapport is door de officier getekent.", goed: "Het rapport is door de officier getekend."},
-    {fout: "De dief is door de achterdeur vlucht.", goed: "De dief is door de achterdeur gevlucht."},
-    {fout: "De inbreker is via het dak klomme.", goed: "De inbreker is via het dak geklommen."},
-    {fout: "De verklaringen zijn gisteren verwerkt.", goed: "De verklaringen zijn gisteren verwerkt."},
-    {fout: "De verdachte heeft de diefstal ontkent.", goed: "De verdachte heeft de diefstal ontkend."},
-    {fout: "Is de snelheid van de auto gemeten?", goed: "Is de snelheid van de auto gemeten?"},
-    {fout: "De buurtbewoners zijn gewaarschuwt.", goed: "De buurtbewoners zijn gewaarschuwd."},
-    {fout: "De forensische opsporing heeft de zaak rond.", goed: "De forensische opsporing heeft de zaak afgerond."},
-    {fout: "De dader is door de eenheid achtervolgt.", goed: "De dader is door de eenheid achtervolgd."},
-    {fout: "Alle goederen zijn in beslag genome.", goed: "Alle goederen zijn in beslag genomen."},
-    {fout: "De verdachte heeft de ruit ingegooid.", goed: "De verdachte heeft de ruit ingegooid."},
-    {fout: "De centralist heeft de eenheid gestuurt.", goed: "De centralist heeft de eenheid gestuurd."},
-    {fout: "Er is melding van overlast maakt.", goed: "Er is melding van overlast gemaakt."},
-    {fout: "De agenten hebben de ruzie sust.", goed: "De agenten hebben de ruzie gesust."},
-    {fout: "De persoon is in goede staat troffen.", goed: "De persoon is in goede staat aangetroffen."},
-    {fout: "De verdachte is langdurig verhoort.", goed: "De verdachte is langdurig verhoord."},
-    {fout: "Heeft u de situatie al gemelt?", goed: "Heeft u de situatie al gemeld?"},
-    {fout: "De ruit is met een baksteen inslage.", goed: "De ruit is met een baksteen ingeslagen."},
-    {fout: "Het bewijs is door ons veilig stelt.", goed: "Het bewijs is door ons veiliggesteld."},
-    {fout: "De verdachte is gisteravond verhuist.", goed: "De verdachte is gisteravond verhuisd."},
-    {fout: "De getuige heeft de verklaring bevestigt.", goed: "De getuige heeft de verklaring bevestigd."},
-    {fout: "De identiteit is door ons vast stelt.", goed: "De identiteit is door ons vastgesteld."},
-    {fout: "De camerabeelden zijn direct beken.", goed: "De camerabeelden zijn direct bekeken."},
-    {fout: "Is de verdachte al in de boeien slage?", goed: "Is de verdachte al in de boeien geslagen?"},
-    {fout: "De verbalisant heeft de zaak onderzoek.", goed: "De verbalisant heeft de zaak onderzocht."},
-    {fout: "De auto is met hoge snelheid rijdt.", goed: "De auto is met hoge snelheid gereden."},
-    {fout: "Het slachtoffer is door ons hoort.", goed: "Het slachtoffer is door ons gehoord."},
-    {fout: "De dader heeft de tas rooft.", goed: "De dader heeft de tas geroofd."},
-    {fout: "De agent heeft de achtervolging staakt.", goed: "De agent heeft de achtervolging gestaakt."},
-    {fout: "De verdachte is naar het bureau bracht.", goed: "De verdachte is naar het bureau gebracht."},
-    {fout: "Er is op de verdachte schote.", goed: "Er is op de verdachte geschoten."},
-    {fout: "De agent heeft zijn wapen trekt.", goed: "De agent heeft zijn wapen getrokken."},
-    {fout: "De situatie is volledig escaleert.", goed: "De situatie is volledig geëscaleerd."},
-    {fout: "De getuige is door de schrik verlamt.", goed: "De getuige is door de schrik verlamd."},
-    {fout: "De dader is uit het zicht raakt.", goed: "De dader is uit het zicht geraakt."},
-    {fout: "De agent heeft de deur forceert.", goed: "De agent heeft de deur geforceerd."},
-    {fout: "Het slot is door de dief forceert.", goed: "Het slot is door de dief geforceerd."},
-    {fout: "De verbalisant heeft de aangifte typt.", goed: "De verbalisant heeft de aangifte getypt."},
-    {fout: "De recherche heeft de sporen zocht.", goed: "De recherche heeft de sporen gezocht."},
-    {fout: "De getuige heeft de dader aanwezen.", goed: "De getuige heeft de dader aangewezen."},
-    {fout: "De verdachte heeft de ruit vernielt.", goed: "De verdachte heeft de ruit vernield."},
-    {fout: "De straat is volledig afzet.", goed: "De straat is volledig afgezet."},
-    {fout: "De politie heeft de drugs vonden.", goed: "De politie heeft de drugs gevonden."},
-    {fout: "De dader is over het hek sprongen.", goed: "De dader is over het hek gesprongen."},
-    {fout: "De agent heeft de man kalmeert.", goed: "De agent heeft de man gekalmeerd."},
-    {fout: "Het proces is door ons afrond.", goed: "Het proces is door ons afgerond."},
-    {fout: "De verdachte heeft de agent beledigt.", goed: "De verdachte heeft de agent beledigd."},
-    {fout: "De boete is direct betaalt.", goed: "De boete is direct betaald."},
-    {fout: "De auto is in beslag genome.", goed: "De auto is in beslag genomen."},
-    {fout: "De verbalisant heeft de getuige hoort.", goed: "De verbalisant heeft de getuige gehoord."},
-    {fout: "De melding is door de meldkamer deelt.", goed: "De melding is door de meldkamer gedeeld."},
-    {fout: "De inbreker heeft de kluis kraakt.", goed: "De inbreker heeft de kluis gekraakt."},
-    {fout: "De agent heeft de weg blokkeert.", goed: "De agent heeft de weg geblokkeerd."},
-    {fout: "De verdachte is in de cel zet.", goed: "De verdachte is in de cel gezet."},
-    {fout: "De dader is door de hond beten.", goed: "De dader is door de hond gebeten."},
-    {fout: "De agent heeft de hond roepen.", goed: "De agent heeft de hond geroepen."},
-    {fout: "De verdachte heeft de wet treden.", goed: "De verdachte heeft de wet overtreden."},
-    {fout: "De diefstal is gisteren meldt.", goed: "De diefstal is gisteren gemeld."},
-    {fout: "De dader heeft de tas grist.", goed: "De dader heeft de tas gegrist."},
-    {fout: "De agent heeft de verdachte boeit.", goed: "De agent heeft de verdachte geboeid."},
-    {fout: "De verdachte is door de recherche schaduwt.", goed: "De verdachte is door de recherche geschaduwd."},
-    {fout: "De inbreker is door de mand vallen.", goed: "De inbreker is door de mand gevallen."},
-    {fout: "De dader is in de val lokt.", goed: "De dader is in de val gelokt."},
-    {fout: "De verdachte heeft de regels negeert.", goed: "De verdachte heeft de regels genegeerd."},
-    {fout: "De agent heeft de situatie inschat.", goed: "De agent heeft de situatie ingeschat."},
-    {fout: "De auto is tegen de boom knalt.", goed:
-        {fout: "De verdachte is direct aangehoude.", goed: "De verdachte is direct na de melding aangehouden."},
-        // ... (etc)
+    // De zinnenpool: Van passief/fout naar actieve OVT
+    const zinnenPool = [
+        {fout: "De dader heeft de tas weggenome", goed: "De dader nam de tas weg."},
+        {fout: "De agent heeft de verdachte fouilleerd", goed: "De agent fouilleerde de verdachte."},
+        {fout: "De recherche heeft de beelden geanalyseert", goed: "De recherche analyseerde de beelden."},
+        {fout: "De getuige heeft de dader herkent", goed: "De getuige herkende de dader."},
+        {fout: "De verdachte heeft de diefstal ontkent", goed: "De verdachte ontkende de diefstal."},
+        {fout: "De verbalisant heeft de rechten voorelezen", goed: "De verbalisant las de rechten voor."},
+        {fout: "De inbreker is via het dak klomme", goed: "De inbreker klom via het dak."},
+        {fout: "De agent heeft de weg afzet", goed: "De agent zette de weg af."},
+        {fout: "De centralist heeft de eenheid gestuurt", goed: "De centralist stuurde de eenheid."},
+        {fout: "De politie heeft het bewijs veilig stelt", goed: "De politie stelde het bewijs veilig."},
+        {fout: "De dader is via de achterdeur vlucht", goed: "De dader vluchtte via de achterdeur."},
+        {fout: "De agent heeft de ruzie sust", goed: "De agent suste de ruzie."},
+        {fout: "De verdachte heeft de sieraden weggenome", goed: "De verdachte nam de sieraden weg."},
+        {fout: "De officier heeft het rapport getekent", goed: "De officier tekende het rapport."},
+        {fout: "De agent heeft de man kalmeert", goed: "De agent kalmeerde de man."},
+        {fout: "De eenheid heeft de dader achtervolgt", goed: "De eenheid achtervolgde de dader."},
+        {fout: "De verbalisant heeft de getuige hoort", goed: "De verbalisant hoorde de getuige."},
+        {fout: "De verdachte heeft de agent beledigt", goed: "De verdachte beledigde de agent."},
+        {fout: "De inbreker heeft de kluis kraakt", goed: "De inbreker kraakte de kluis."},
+        {fout: "De verbalisant heeft de aangifte typt", goed: "De verbalisant typte de aangifte."},
+        {fout: "De agent heeft de hond roepen", goed: "De agent riep de hond."},
+        {fout: "De dief heeft de portemonnee weggenome", goed: "De dief nam de portemonnee weg."},
+        {fout: "De verdachte heeft de regels negeert", goed: "De verdachte negeerde de regels."},
+        {fout: "De agent heeft de situatie inschat", goed: "De agent schatte de situatie in."},
+        {fout: "De dief heeft de sieraden stelen", goed: "De dief stal de sieraden."},
+        {fout: "De dader is in de val lokt", goed: "De dader lokte in de val."},
+        {fout: "De agent heeft zijn wapen trokke", goed: "De agent trok zijn wapen."},
+        {fout: "De verdachte heeft de ruit smete", goed: "De verdachte smeet de ruit in."},
+        {fout: "De recherche heeft de sporen zocht", goed: "De recherche zocht de sporen."}
+        // Uit te breiden naar 100 zinnen volgens dit patroon
     ];
 
     let mijnSelectie = [];
     let mijnId = "";
-    let peerIdVoorScore = "";
+    let peerIdScore = "";
     let lokaleScore = 0;
-    let beoordeeldAantal = 0;
+    let beantwoord = 0;
 
     function login() {
         const naam = document.getElementById('student-naam').value;
-        if(!naam) return alert("Naam?");
-        let idx = Array.from(Array(100).keys()).sort(() => Math.random() - 0.5);
+        if(!naam) return alert("Naam verplicht.");
+        let idx = Array.from(Array(zinnenPool.length).keys()).sort(() => Math.random() - 0.5);
         mijnSelectie = idx.slice(0, 25);
         showScreen('input-screen');
         renderVragen();
@@ -186,7 +134,13 @@
 
     function renderVragen() {
         const div = document.getElementById('vragen-lijst');
-        div.innerHTML = mijnSelectie.map(i => `<div class="zin-container"><span class="foute-zin">${zinnenPool[i]?.fout || 'Foutieve zin'}</span><input type="text" id="zin-${i}"></div>`).join('');
+        div.innerHTML = mijnSelectie.map(i => `
+            <div class="zin-container">
+                <span class="opdracht-label">Zet om naar actieve OVT:</span>
+                <span style="display:block; margin-bottom:10px;">${zinnenPool[i].fout}</span>
+                <input type="text" id="zin-${i}" autocomplete="off" placeholder="Typ de actieve zin...">
+            </div>
+        `).join('');
     }
 
     function verstuurZinnen() {
@@ -201,54 +155,44 @@
         }).then(ref => { mijnId = ref.key; showScreen('wait-screen'); });
     }
 
-    function beoordeel(element, status) {
-        const container = element.closest('.zin-container');
-        if(container.dataset.klaar) return;
-        container.dataset.klaar = "true";
-        beoordeeldAantal++;
-        
-        if(status === 'goed') {
-            container.classList.add('is-goed');
-            lokaleScore++;
-        } else {
-            container.classList.add('is-fout');
-        }
+    function beoordeel(btn, type) {
+        const container = btn.closest('.zin-container');
+        if(container.dataset.beoordeeld) return;
+        container.dataset.beoordeeld = "true";
+        beantwoord++;
+        if(type === 'goed') { lokaleScore++; container.classList.add('is-goed'); } 
+        else { container.classList.add('is-fout'); }
         container.querySelector('.sleutel-box').style.display = 'block';
-
-        // Update score van de MAKER in Firebase
-        db.ref('taaltraining/studenten/' + peerIdVoorScore).update({
+        db.ref('taaltraining/studenten/' + peerIdScore).update({ 
             score: lokaleScore,
-            status: "Beoordeeld (" + beoordeeldAantal + "/25)"
+            status: "Beoordeeld (" + beantwoord + "/25)"
         });
-
-        if(beoordeeldAantal === 25) document.getElementById('eindrapport').style.display = 'block';
     }
 
     function renderPeerReview(pData, pKey) {
-        peerIdVoorScore = pKey;
+        peerIdScore = pKey;
         showScreen('peer-screen');
         document.getElementById('review-naam').innerText = pData.naam;
         const div = document.getElementById('peer-lijst');
         div.innerHTML = pData.mijnSelectie.map(idx => `
             <div class="zin-container">
-                <span class="foute-zin">Origineel: ${zinnenPool[idx]?.fout}</span>
-                <span style="display:block; margin:5px 0;"><strong>Invoer:</strong> ${pData.antwoorden[idx]}</span>
+                <span style="font-size:0.8em; color:gray;">OPDRACHT: ${zinnenPool[idx].fout}</span>
+                <span style="display:block; margin:10px 0; font-weight:bold;">INVOER: ${pData.antwoorden[idx] || '[Geen invoer]'}</span>
                 <div class="btn-group">
-                    <button class="btn-check" style="background:var(--goed)" onclick="beoordeel(this, 'goed')">CORRECT</button>
-                    <button class="btn-check" style="background:var(--fout)" onclick="beoordeel(this, 'fout')">ONJUIST</button>
+                    <button class="btn-check" style="background:var(--goed);" onclick="beoordeel(this, 'goed')">CORRECT</button>
+                    <button class="btn-check" style="background:var(--fout);" onclick="beoordeel(this, 'fout')">ONJUIST</button>
                 </div>
-                <div class="sleutel-box">Sleutel: ${zinnenPool[idx]?.goed}</div>
+                <div class="sleutel-box">Sleutel: ${zinnenPool[idx].goed}</div>
             </div>
         `).join('');
     }
 
-    // LIVE MONITOR VOOR DOCENT
     db.ref('taaltraining/studenten').on('value', snap => {
-        const tbody = document.getElementById('score-body');
-        tbody.innerHTML = "";
+        const body = document.getElementById('score-body');
+        body.innerHTML = "";
         snap.forEach(child => {
             const s = child.val();
-            tbody.innerHTML += `<tr><td>${s.naam}</td><td>${s.status}</td><td><strong>${s.score}</strong></td></tr>`;
+            body.innerHTML += `<tr><td>${s.naam}</td><td><strong>${s.score} / 25</strong> (${s.status || 'Bezig'})</td></tr>`;
         });
     });
 
@@ -264,6 +208,7 @@
     function startNakijken() {
         db.ref('taaltraining/studenten').once('value', snap => {
             let ids = []; snap.forEach(c => ids.push(c.key));
+            if(ids.length < 2) return alert("Niet genoeg deelnemers.");
             let shuf = ids.sort(() => Math.random() - 0.5);
             shuf.forEach((id, i) => db.ref('taaltraining/studenten/' + id).update({ toegewezenAan: shuf[(i+1)%shuf.length], status: "Wordt nagekeken" }));
             db.ref('taaltraining/status').set('review');
@@ -275,7 +220,7 @@
         document.getElementById(id).classList.add('active');
     }
 
-    function wisAlles() { if(confirm("Reset?")) db.ref('taaltraining').set(null).then(() => location.reload()); }
+    function wisAlles() { if(confirm("Reset alle data?")) db.ref('taaltraining').set(null).then(() => location.reload()); }
 </script>
 </body>
 </html>
