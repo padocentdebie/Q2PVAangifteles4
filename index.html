@@ -11,23 +11,21 @@
         .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         h1, h2 { color: var(--polblauw); text-align: center; border-bottom: 3px solid var(--goud); padding-bottom: 10px; }
         
-        /* Schermen */
         .screen { display: none; }
         .active { display: block; }
 
-        /* Form styling */
         .zin-container { margin-bottom: 20px; padding: 15px; border-left: 4px solid var(--polblauw); background: #f8fafc; }
-        .foute-zin { font-style: italic; color: var(--fout); margin-bottom: 8px; display: block; }
-        input[type="text"] { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px; box-sizing: border-box; }
+        .foute-zin { font-style: italic; color: var(--fout); margin-bottom: 8px; display: block; font-weight: bold; }
+        input[type="text"] { width: 100%; padding: 12px; border: 1px solid #cbd5e0; border-radius: 4px; box-sizing: border-box; }
         
         button { background: var(--polblauw); color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; text-transform: uppercase; }
-        button:hover { opacity: 0.9; }
-        .admin-btn { background: var(--fout); margin-top: 50px; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        
+        .admin-zone { margin-top: 50px; padding: 20px; border: 2px dashed var(--fout); border-radius: 8px; background: #fff5f5; }
+        .reset-btn { background: var(--fout); }
         .start-btn { background: var(--goed); }
-
-        /* Nakijken */
-        .nakijk-box { border: 2px solid var(--goud); padding: 20px; margin-top: 20px; border-radius: 8px; }
-        .badge { background: var(--polblauw); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; }
+        
+        .info-box { background: #e2e8f0; padding: 10px; border-radius: 4px; font-size: 0.9em; margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -35,42 +33,41 @@
 <div class="container">
     <div id="login-screen" class="screen active">
         <h1>Inloggen Student</h1>
-        <p>Voer je naam in om te starten met de taaltraining.</p>
-        <input type="text" id="student-naam" placeholder="Volledige naam">
+        <p style="text-align:center;">Voer je naam in om te starten met de taaltraining (Politie-thema).</p>
+        <input type="text" id="student-naam" placeholder="Volledige naam verbalisant">
         <button onclick="login()">Start Training</button>
     </div>
 
     <div id="input-screen" class="screen">
         <h2>Verbeter de Rapportage</h2>
-        <p>Schrijf de volledige zin correct over (let op het voltooid deelwoord).</p>
+        <div class="info-box">Herken het voltooid deelwoord en schrijf de <strong>volledige zin</strong> correct over.</div>
         <div id="vragen-lijst"></div>
-        <button onclick="verstuurZinnen()">Lever in voor Nakijken</button>
+        <button id="submit-btn" onclick="verstuurZinnen()">Lever in voor Nakijken</button>
     </div>
 
     <div id="wait-screen" class="screen">
-        <h2>Geduld a.u.b.</h2>
-        <p>Je werk is ingeleverd. Wacht tot de docent de nakijkronde start...</p>
-        <div id="status-update"></div>
+        <h2>Werk Ontvangen</h2>
+        <p style="text-align:center;">Wacht tot de docent de nakijkronde start. Er wordt dan automatisch een dossier van een collega naar je gestuurd.</p>
+        <div id="live-count" style="text-align:center; font-weight:bold; color:var(--polblauw);"></div>
     </div>
 
     <div id="peer-screen" class="screen">
-        <h2>Peer Review: <span id="review-naam"></span></h2>
-        <p>Kijk de zinnen van je collega na. Bespreek de fouten klassikaal.</p>
+        <h2>Nakijken: <span id="review-naam" style="color:var(--fout);"></span></h2>
+        <p>Kijk de spelling van de voltooid deelwoorden na bij je collega.</p>
         <div id="peer-lijst"></div>
+        <button onclick="location.reload()">Klaar / Terug</button>
     </div>
 
     <div class="admin-zone">
-        <button class="admin-btn" onclick="toggleAdmin()">Docenten Menu</button>
-        <div id="admin-controls" style="display:none; border-top: 1px solid #ccc; margin-top: 20px; padding-top: 20px;">
-            <button class="start-btn" onclick="startNakijken()">Start Nakijkronde (Verdeel Werk)</button>
-            <button onclick="wisAlles()" style="background:#4a5568;">Reset Volledige Sessie</button>
-            <p id="aanmeldingen"></p>
-        </div>
+        <h3 style="margin-top:0; color:var(--fout);">Docenten Paneel</h3>
+        <button class="start-btn" onclick="startNakijken()">1. Start Nakijkronde (Verdeel Werk)</button>
+        <button class="reset-btn" style="margin-top:15px;" onclick="wisAlles()">2. Sessie Volledig Resetten (Na de les)</button>
+        <p id="aanmeldingen" style="font-size:0.8em; margin-top:10px;"></p>
     </div>
 </div>
 
 <script>
-    // Firebase Config (Zelfde als Hans/Samir project)
+    // Jouw Firebase Configuratie
     const firebaseConfig = {
         apiKey: "AIzaSyBj8dXkl1rEfyx54_MDy_tYd2P7kAeU8VQ",
         authDomain: "q2les3samirgem.firebaseapp.com",
@@ -117,7 +114,7 @@
 
     function login() {
         mijnNaam = document.getElementById('student-naam').value;
-        if(!mijnNaam) return alert("Naam verplicht!");
+        if(!mijnNaam) return alert("Voer je naam in.");
         showScreen('input-screen');
         renderVragen();
     }
@@ -138,9 +135,12 @@
     }
 
     function verstuurZinnen() {
-        const antwoorden = zinnen.map((_, i) => document.getElementById(`zin-${i}`).value);
-        if(antwoorden.some(a => a === "")) return alert("Maak eerst alle zinnen af!");
+        const antwoorden = zinnen.map((_, i) => document.getElementById(`zin-${i}`).value.trim());
+        if(antwoorden.some(a => a === "")) return alert("Vul alle zinnen in voordat je inlevert.");
         
+        document.getElementById('submit-btn').disabled = true;
+        document.getElementById('submit-btn').innerText = "Verzenden...";
+
         const ref = db.ref('taaltraining/studenten').push({
             naam: mijnNaam,
             antwoorden: antwoorden,
@@ -150,7 +150,7 @@
         showScreen('wait-screen');
     }
 
-    // Luister naar de start van de nakijkronde
+    // Luister of de docent de ronde start
     db.ref('taaltraining/status').on('value', snap => {
         if(snap.val() === 'review' && mijnId) {
             db.ref('taaltraining/studenten/' + mijnId).once('value', sSnap => {
@@ -170,51 +170,47 @@
         const div = document.getElementById('peer-lijst');
         div.innerHTML = peerData.antwoorden.map((a, i) => `
             <div class="zin-container">
-                <span class="foute-zin">Origineel: ${zinnen[i]}</span>
-                <strong>Correctie van ${peerData.naam}:</strong><br>
-                <p style="margin-top:5px;">${a}</p>
+                <span style="font-size:0.8em; color:#777;">Zin ${i+1}: ${zinnen[i]}</span><br>
+                <strong>Antwoord van collega:</strong>
+                <p style="background:white; padding:10px; border-radius:4px; border:1px solid #ddd;">${a}</p>
             </div>
         `).join('');
     }
 
-    // Admin functies
-    function toggleAdmin() {
-        const div = document.getElementById('admin-controls');
-        div.style.display = div.style.display === 'none' ? 'block' : 'none';
-    }
-
+    // Admin: Start Verdeling
     function startNakijken() {
         db.ref('taaltraining/studenten').once('value', snap => {
             const studenten = [];
-            snap.forEach(child => { studenten.push({id: child.key, ...child.val()}); });
+            snap.forEach(child => { studenten.push({id: child.key}); });
             
-            if(studenten.length < 2) return alert("Minimaal 2 studenten nodig!");
+            if(studenten.length < 2) return alert("Wacht tot er minimaal 2 studenten hebben ingeleverd.");
 
-            // Willekeurig verdelen (A krijgt B, B krijgt C, etc)
             const geshuffeld = [...studenten].sort(() => Math.random() - 0.5);
-            
-            geshuffeld.forEach((student, index) => {
-                const volgendeStudent = geshuffeld[(index + 1) % geshuffeld.length];
-                db.ref('taaltraining/studenten/' + student.id).update({
-                    toegewezenAan: volgendeStudent.id
-                });
+            geshuffeld.forEach((s, i) => {
+                const volgende = geshuffeld[(i + 1) % geshuffeld.length];
+                db.ref('taaltraining/studenten/' + s.id).update({ toegewezenAan: volgende.id });
             });
-
             db.ref('taaltraining/status').set('review');
+            alert("Nakijkronde is gestart!");
         });
     }
 
+    // Admin: Volledige Reset
     function wisAlles() {
-        if(confirm("Alles wissen?")) {
-            db.ref('taaltraining').set(null);
-            location.reload();
+        if(confirm("LET OP: Dit wist alle ingeleverde zinnen van de huidige klas. Doorgaan?")) {
+            db.ref('taaltraining').set(null).then(() => {
+                alert("Database gereset voor de volgende les.");
+                location.reload();
+            });
         }
     }
 
-    // Monitor aanmeldingen voor docent
+    // Live teller
     db.ref('taaltraining/studenten').on('value', snap => {
         const count = snap.numChildren();
-        document.getElementById('aanmeldingen').innerText = "Ingeleverd: " + count + " studenten";
+        const tekst = "Ingeleverd door " + count + " student(en)";
+        document.getElementById('aanmeldingen').innerText = tekst;
+        if(document.getElementById('live-count')) document.getElementById('live-count').innerText = tekst;
     });
 </script>
 
