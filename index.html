@@ -2,54 +2,127 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>Politie Academie - PV Training Live Digibord</title>
+    <title>Politie Academie - PV Training & Leaderboard</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
         :root { --polblauw: #1d4e89; --goud: #f9d423; --bg: #f4f7f9; --fout: #e53e3e; --goed: #28a745; --tekst: #2d3748; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 20px; color: var(--tekst); margin: 0; }
         .container { max-width: 950px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: relative; }
-        .screen { display: none; }
-        .active { display: block; }
-        .btn-main { background: var(--polblauw); color: white; width: 100%; padding: 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        
+        /* Header & Afbeelding */
+        .header-img { display: block; margin: 0 auto 20px; max-width: 250px; border-radius: 8px; }
+        h1 { color: var(--polblauw); text-align: center; margin-bottom: 5px; }
+        .sub-header { text-align: center; color: #666; margin-bottom: 30px; }
 
-        /* WHITEBOARD STYLES */
+        /* Oefening Styles */
+        .sentence-row { margin-bottom: 25px; padding: 15px; border-bottom: 1px solid #eee; }
+        .passive-text { font-style: italic; color: #555; margin-bottom: 8px; display: block; font-weight: 500; }
+        .input-field { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 4px; font-size: 16px; box-sizing: border-box; transition: 0.3s; }
+        .feedback-tip { font-size: 0.85em; color: var(--fout); margin-top: 6px; display: none; font-weight: bold; }
+        
+        .is-correct { border-color: var(--goed) !important; background-color: #e6ffed; }
+        .is-wrong { border-color: var(--fout) !important; background-color: #fff5f5; }
+
+        /* Leaderboard */
+        #leaderboard { margin-top: 40px; padding: 20px; border: 2px solid var(--goud); border-radius: 8px; background: #fffcf0; }
+        #leaderboard-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        #leaderboard-table th { text-align: left; padding: 10px; border-bottom: 2px solid var(--goud); }
+        #leaderboard-table td { padding: 10px; border-bottom: 1px solid #eee; }
+
+        /* Knoppen */
+        .btn-main { background: var(--polblauw); color: white; padding: 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; font-size: 18px; margin-top: 20px; }
+        .btn-wb { position: absolute; right: 20px; top: 20px; padding: 10px 15px; background: var(--goud); border: none; border-radius: 4px; font-weight: bold; cursor: pointer; z-index: 10; }
+
+        /* Whiteboard Overlay */
         #whiteboard-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 1000; flex-direction: column; }
         .wb-toolbar { background: var(--polblauw); padding: 10px; display: flex; gap: 10px; align-items: center; color: white; }
-        #wb-canvas { flex-grow: 1; cursor: crosshair; touch-action: none; background: #fff; }
-        .wb-btn { padding: 5px 12px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; }
-        .color-dot { width: 25px; height: 25px; border-radius: 50%; border: 2px solid white; cursor: pointer; }
-        .text-input { position: absolute; background: transparent; border: 1px dashed #ccc; outline: none; font-size: 20px; padding: 5px; min-width: 50px; }
+        #wb-canvas { flex-grow: 1; cursor: crosshair; touch-action: none; }
+        .text-input { position: absolute; background: transparent; border: 1px dashed #ccc; outline: none; font-size: 20px; }
     </style>
 </head>
 <body>
 
 <div id="whiteboard-overlay">
     <div class="wb-toolbar">
-        <span style="font-weight:bold; margin-right:10px;">LIVE BORD</span>
-        <button class="wb-btn" onclick="setWbMode('draw')">✏️ Stift</button>
-        <button class="wb-btn" onclick="setWbMode('text')">⌨️ Tekst</button>
-        <div class="color-dot" onclick="setWbColor('#1d4e89')" style="background: #1d4e89;"></div>
-        <div class="color-dot" onclick="setWbColor('#e53e3e')" style="background: #e53e3e;"></div>
-        <div class="color-dot" onclick="setWbColor('#28a745')" style="background: #28a745;"></div>
-        <button class="wb-btn" onclick="clearWbServer()" style="background:#ddd; color: #333; margin-left: auto;">🗑️ Wis Alles</button>
-        <button class="wb-btn" onclick="closeWb()" style="background:var(--fout); color: white;">❌ Sluit</button>
+        <span style="font-weight:bold;">LIVE DIGIBORD</span>
+        <button onclick="setWbMode('draw')">✏️ Stift</button>
+        <button onclick="setWbMode('text')">⌨️ Tekst</button>
+        <div onclick="setWbColor('#1d4e89')" style="width:20px;height:20px;background:#1d4e89;border-radius:50%;cursor:pointer;border:2px solid white;"></div>
+        <div onclick="setWbColor('#e53e3e')" style="width:20px;height:20px;background:#e53e3e;border-radius:50%;cursor:pointer;border:2px solid white;"></div>
+        <button onclick="clearWbServer()" style="margin-left:auto;">🗑️ Wis Alles</button>
+        <button onclick="closeWb()" style="background:var(--fout); color:white; border:none; padding:5px 10px; cursor:pointer;">Sluiten</button>
     </div>
-    <div style="position: relative; flex-grow: 1;" id="wb-container">
+    <div id="wb-container" style="position:relative; flex-grow:1;">
         <canvas id="wb-canvas"></canvas>
     </div>
 </div>
 
 <div class="container">
-    <div id="login-screen" class="screen active">
-        <button onclick="openWb()" style="position: absolute; right: 10px; top: 10px; padding: 10px; background: var(--goud); border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">🖥️ OPEN LIVE DIGIBORD</button>
-        <h1 style="color:var(--polblauw); text-align:center;">PV-Training 100</h1>
-        <p style="text-align:center;">Klik op de gouden knop om het gezamenlijke bord te openen.</p>
+    <button class="btn-wb" onclick="openWb()">🖥️ LIVE DIGIBORD</button>
+    
+    <img src="giphy (4).gif" alt="Politie Logo" class="header-img">
+    
+    <h1>PV-Training: Actieve Vorm</h1>
+    <p class="sub-header">Schrijf de zin om naar de <strong>actieve vorm</strong> in de <strong>verleden tijd</strong> met <strong>'Ik'</strong>.</p>
+
+    <div id="questions-container"></div>
+    
+    <button class="btn-main" onclick="checkAnswers()">CONTROLEER & OPSLAAN</button>
+
+    <div id="leaderboard">
+        <h3 style="margin-top:0; text-align:center;">🏆 Ranglijst (Live)</h3>
+        <table id="leaderboard-table">
+            <thead>
+                <tr>
+                    <th>Naam</th>
+                    <th>Score</th>
+                    <th>Niveau</th>
+                </tr>
+            </thead>
+            <tbody id="leaderboard-body"></tbody>
+        </table>
     </div>
 </div>
 
 <script>
-    // FIREBASE INITIALISATIE
+    // 1. DATA: 20 JUSTITIE ZINNEN
+    const exerciseData = [
+        { p: "Door mij werd de verdachte staande gehouden.", a: "Ik hield de verdachte staande" },
+        { p: "Door mij werd het proces-verbaal opgemaakt.", a: "Ik maakte het proces-verbaal op" },
+        { p: "Door mij werd de getuige gehoord op het bureau.", a: "Ik hoorde de getuige op het bureau" },
+        { p: "Door mij werd de woning doorzocht na toestemming.", a: "Ik doorzocht de woning na toestemming" },
+        { p: "Door mij werd de bewijslast veiliggesteld.", a: "Ik stelde de bewijslast veilig" },
+        { p: "Door mij werd assistentie gevraagd via de portofoon.", a: "Ik vroeg assistentie via de portofoon" },
+        { p: "Door mij werd de alcoholtest afgenomen.", a: "Ik nam de alcoholtest af" },
+        { p: "Door mij werd het voertuig gecontroleerd op drugs.", a: "Ik controleerde het voertuig op drugs" },
+        { p: "Door mij werd de aangifte van diefstal opgenomen.", a: "Ik nam de aangifte van diefstal op" },
+        { p: "Door mij werd de achtervolging ingezet.", a: "Ik zette de achtervolging in" },
+        { p: "Door mij werd de boete direct uitgeschreven.", a: "Ik schreef de boete direct uit" },
+        { p: "Door mij werd het signalement verspreid.", a: "Ik verspreidde het signalement" },
+        { p: "Door mij werd contact opgenomen met de Officier van Justitie.", a: "Ik nam contact op met de Officier van Justitie" },
+        { p: "Door mij werd de camerabeveiliging uitgelezen.", a: "Ik las de camerabeveiliging uit" },
+        { p: "Door mij werd het gebied afgezet voor onderzoek.", a: "Ik zette het gebied af voor onderzoek" },
+        { p: "Door mij werd de verdachte voorgeleid aan de hulpofficier.", a: "Ik leidde de verdachte voor aan de hulpofficier" },
+        { p: "Door mij werd de gestolen fiets teruggegeven aan de eigenaar.", a: "Ik gaf de gestolen fiets terug aan de eigenaar" },
+        { p: "Door mij werd een waarschuwing gegeven aan de overlastgever.", a: "Ik gaf een waarschuwing aan de overlastgever" },
+        { p: "Door mij werd het proces verbaal van bevindingen getypt.", a: "Ik typte het proces verbaal van bevindingen" },
+        { p: "Door mij werd de fouillering uitgevoerd.", a: "Ik voerde de fouillering uit" }
+    ];
+
+    // 2. VRAGEN GENEREREN
+    const container = document.getElementById('questions-container');
+    exerciseData.forEach((item, index) => {
+        container.innerHTML += `
+            <div class="sentence-row">
+                <span class="passive-text">${index + 1}. ${item.p}</span>
+                <input type="text" class="input-field" id="input-${index}" placeholder="Typ actieve zin...">
+                <div class="feedback-tip" id="tip-${index}"></div>
+            </div>
+        `;
+    });
+
+    // 3. FIREBASE SETUP
     const firebaseConfig = {
         apiKey: "AIzaSyBj8dXkl1rEfyx54_MDy_tYd2P7kAeU8VQ",
         authDomain: "q2les3samirgem.firebaseapp.com",
@@ -62,121 +135,91 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // WHITEBOARD VARIABELEN
-    const wbCanvas = document.getElementById('wb-canvas');
-    const wbCtx = wbCanvas.getContext('2d');
-    const wbContainer = document.getElementById('wb-container');
-    let wbDrawing = false;
-    let wbMode = 'draw';
-    let wbColor = '#1d4e89';
-    let lastX = 0;
-    let lastY = 0;
+    // 4. CORRECTIE & TIPS
+    function checkAnswers() {
+        let score = 0;
+        exerciseData.forEach((item, index) => {
+            const inputEl = document.getElementById(`input-${index}`);
+            const tipEl = document.getElementById(`tip-${index}`);
+            const userVal = inputEl.value.trim().toLowerCase().replace(/[.!?]$/, "");
+            const correctVal = item.a.toLowerCase().replace(/[.!?]$/, "");
+
+            tipEl.style.display = "none";
+            inputEl.className = "input-field";
+
+            if (userVal === correctVal) {
+                inputEl.classList.add("is-correct");
+                score++;
+            } else if (userVal !== "") {
+                inputEl.classList.add("is-wrong");
+                tipEl.style.display = "block";
+                if (!userVal.startsWith("ik")) tipEl.innerText = "Tip: Begin met 'Ik'.";
+                else if (userVal.includes("word")) tipEl.innerText = "Tip: Gebruik de verleden tijd (hield, maakte, etc).";
+                else tipEl.innerText = "Tip: Let op spelling of missende woorden.";
+            }
+        });
+
+        const naam = prompt(`Je score is ${score}/20. Voer je naam in voor de ranglijst:`);
+        if (naam) {
+            let niveau = "Beginner";
+            if (score >= 11) niveau = "Voldoende";
+            if (score >= 17) niveau = "Expert";
+            if (score === 20) niveau = "PV-Master 👮";
+            db.ref('scores/' + naam).set({ naam, score, niveau, ts: Date.now() });
+        }
+    }
+
+    // 5. LIVE LEADERBOARD
+    db.ref('scores').orderByChild('score').on('value', snap => {
+        const board = document.getElementById('leaderboard-body');
+        board.innerHTML = "";
+        let entries = [];
+        snap.forEach(child => { entries.push(child.val()); });
+        entries.reverse().forEach(e => {
+            board.innerHTML += `<tr><td>${e.naam}</td><td>${e.score}/20</td><td><strong>${e.niveau}</strong></td></tr>`;
+        });
+    });
+
+    // 6. WHITEBOARD LOGICA (SAMENGEVAT)
+    const canvas = document.getElementById('wb-canvas');
+    const ctx = canvas.getContext('2d');
+    let drawing = false, mode = 'draw', color = '#1d4e89', lastX = 0, lastY = 0;
 
     function openWb() { 
         document.getElementById('whiteboard-overlay').style.display = 'flex'; 
-        wbCanvas.width = window.innerWidth;
-        wbCanvas.height = window.innerHeight - 50;
-        listenToWhiteboard(); // Start met luisteren naar wijzigingen van anderen
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight - 50;
+        listenWb();
     }
-
     function closeWb() { document.getElementById('whiteboard-overlay').style.display = 'none'; }
-    function setWbMode(m) { wbMode = m; }
-    function setWbColor(c) { wbColor = c; }
+    function setWbMode(m) { mode = m; }
+    function setWbColor(c) { color = c; }
+    function clearWbServer() { if(confirm("Bord wissen voor iedereen?")) db.ref('whiteboard').set(null); }
 
-    // Wis het bord voor iedereen
-    function clearWbServer() {
-        if(confirm("Dit wist het bord voor iedereen. Weet je het zeker?")) {
-            db.ref('whiteboard').set(null);
-        }
-    }
+    canvas.onmousedown = (e) => {
+        if(mode==='draw') { drawing=true; [lastX,lastY]=[e.clientX, e.clientY-50]; }
+        else { const id=Date.now(); db.ref('whiteboard/texts/'+id).set({id, x:e.clientX, y:e.clientY-50, text:"Typ...", color}); }
+    };
+    canvas.onmousemove = (e) => {
+        if(!drawing) return;
+        db.ref('whiteboard/lines').push().set({x0:lastX, y0:lastY, x1:e.clientX, y1:e.clientY-50, color});
+        [lastX,lastY] = [e.clientX, e.clientY-50];
+    };
+    canvas.onmouseup = () => drawing = false;
 
-    // Teken lokaal en stuur naar server
-    wbCanvas.addEventListener('mousedown', (e) => {
-        if(wbMode === 'draw') {
-            wbDrawing = true;
-            [lastX, lastY] = [e.clientX, e.clientY - 50];
-        } else {
-            // Tekst toevoegen en naar Firebase sturen
-            const textId = Date.now();
-            const textData = {
-                id: textId,
-                x: e.clientX,
-                y: e.clientY - 50,
-                text: "Typ hier...",
-                color: wbColor
-            };
-            db.ref('whiteboard/texts/' + textId).set(textData);
-        }
-    });
-
-    wbCanvas.addEventListener('mousemove', (e) => {
-        if(!wbDrawing) return;
-        const currentX = e.clientX;
-        const currentY = e.clientY - 50;
-
-        // Stuur lijn-coördinaten naar Firebase
-        const lineRef = db.ref('whiteboard/lines').push();
-        lineRef.set({
-            x0: lastX, y0: lastY,
-            x1: currentX, y1: currentY,
-            color: wbColor
+    function listenWb() {
+        db.ref('whiteboard/lines').on('child_added', s => {
+            const d=s.val(); ctx.beginPath(); ctx.moveTo(d.x0,d.y0); ctx.lineTo(d.x1,d.y1);
+            ctx.strokeStyle=d.color; ctx.lineWidth=3; ctx.stroke();
         });
-
-        [lastX, lastY] = [currentX, currentY];
-    });
-
-    wbCanvas.addEventListener('mouseup', () => wbDrawing = false);
-
-    // LIVE LUISTEREN NAAR DATABASE
-    function listenToWhiteboard() {
-        // Luister naar nieuwe lijnen
-        db.ref('whiteboard/lines').on('child_added', snap => {
-            const data = snap.val();
-            drawRemoteLine(data.x0, data.y0, data.x1, data.y1, data.color);
+        db.ref('whiteboard/texts').on('child_added', s => {
+            const d=s.val(); if(document.getElementById('t-'+d.id)) return;
+            const div=document.createElement('div'); div.id='t-'+d.id; div.contentEditable=true;
+            div.className='text-input'; div.style.left=d.x+'px'; div.style.top=d.y+'px';
+            div.style.color=d.color; div.innerText=d.text;
+            div.onblur = () => db.ref('whiteboard/texts/'+d.id).update({text: div.innerText});
+            document.getElementById('wb-container').appendChild(div);
         });
-
-        // Luister naar nieuwe teksten
-        db.ref('whiteboard/texts').on('child_added', snap => {
-            const data = snap.val();
-            createRemoteText(data);
-        });
-
-        // Luister naar 'Wis Alles'
-        db.ref('whiteboard').on('value', snap => {
-            if(!snap.exists()) {
-                wbCtx.clearRect(0, 0, wbCanvas.width, wbCanvas.height);
-                wbContainer.querySelectorAll('.text-input').forEach(el => el.remove());
-            }
-        });
-    }
-
-    function drawRemoteLine(x0, y0, x1, y1, color) {
-        wbCtx.beginPath();
-        wbCtx.moveTo(x0, y0);
-        wbCtx.lineTo(x1, y1);
-        wbCtx.strokeStyle = color;
-        wbCtx.lineWidth = 3;
-        wbCtx.lineCap = 'round';
-        wbCtx.stroke();
-    }
-
-    function createRemoteText(data) {
-        if(document.getElementById('txt-' + data.id)) return;
-        const input = document.createElement('div');
-        input.id = 'txt-' + data.id;
-        input.contentEditable = true;
-        input.className = 'text-input';
-        input.style.left = data.x + 'px';
-        input.style.top = data.y + 'px';
-        input.style.color = data.color;
-        input.innerText = data.text;
-        
-        // Update tekst live voor anderen als je stopt met typen
-        input.addEventListener('blur', () => {
-            db.ref('whiteboard/texts/' + data.id).update({ text: input.innerText });
-        });
-
-        wbContainer.appendChild(input);
+        db.ref('whiteboard').on('value', s => { if(!s.exists()){ ctx.clearRect(0,0,canvas.width,canvas.height); document.querySelectorAll('.text-input').forEach(e=>e.remove()); }});
     }
 </script>
 </body>
