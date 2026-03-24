@@ -32,6 +32,7 @@
 
         /* Knoppen */
         .btn-main { background: var(--polblauw); color: white; padding: 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; font-size: 18px; margin-top: 20px; }
+        .btn-reset { background: #718096; color: white; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; font-size: 14px; margin-top: 10px; }
         .btn-wb { position: absolute; right: 20px; top: 20px; padding: 10px 15px; background: var(--goud); border: none; border-radius: 4px; font-weight: bold; cursor: pointer; z-index: 10; }
 
         /* Whiteboard Overlay */
@@ -69,6 +70,7 @@
     <div id="questions-container"></div>
     
     <button class="btn-main" onclick="checkAnswers()">CONTROLEER & OPSLAAN</button>
+    <button class="btn-reset" onclick="resetExercise()">RESET OEFENING</button>
 
     <div id="leaderboard">
         <h3 style="margin-top:0; text-align:center;">🏆 Ranglijst (Live)</h3>
@@ -166,6 +168,20 @@
             if (score >= 17) niveau = "Expert";
             if (score === 20) niveau = "PV-Master 👮";
             db.ref('scores/' + naam).set({ naam, score, niveau, ts: Date.now() });
+        }
+    }
+
+    // RESET FUNCTIE
+    function resetExercise() {
+        if(confirm("Weet je zeker dat je alle antwoorden wilt wissen?")) {
+            exerciseData.forEach((item, index) => {
+                const inputEl = document.getElementById(`input-${index}`);
+                const tipEl = document.getElementById(`tip-${index}`);
+                inputEl.value = "";
+                inputEl.className = "input-field";
+                tipEl.style.display = "none";
+            });
+            window.scrollTo({top: 0, behavior: 'smooth'});
         }
     }
 
