@@ -10,12 +10,10 @@
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 20px; color: var(--tekst); margin: 0; }
         .container { max-width: 950px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: relative; }
         
-        /* Header & Afbeelding */
         .header-img { display: block; margin: 0 auto 20px; max-width: 250px; border-radius: 8px; }
         h1 { color: var(--polblauw); text-align: center; margin-bottom: 5px; }
         .sub-header { text-align: center; color: #666; margin-bottom: 30px; }
 
-        /* Oefening Styles */
         .sentence-row { margin-bottom: 25px; padding: 15px; border-bottom: 1px solid #eee; }
         .passive-text { font-style: italic; color: #555; margin-bottom: 8px; display: block; font-weight: 500; }
         .input-field { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 4px; font-size: 16px; box-sizing: border-box; transition: 0.3s; }
@@ -24,18 +22,30 @@
         .is-correct { border-color: var(--goed) !important; background-color: #e6ffed; }
         .is-wrong { border-color: var(--fout) !important; background-color: #fff5f5; }
 
-        /* Leaderboard */
         #leaderboard { margin-top: 40px; padding: 20px; border: 2px solid var(--goud); border-radius: 8px; background: #fffcf0; }
         #leaderboard-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         #leaderboard-table th { text-align: left; padding: 10px; border-bottom: 2px solid var(--goud); }
         #leaderboard-table td { padding: 10px; border-bottom: 1px solid #eee; }
 
-        /* Knoppen */
         .btn-main { background: var(--polblauw); color: white; padding: 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; font-size: 18px; margin-top: 20px; }
-        .btn-reset { background: #718096; color: white; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; font-size: 14px; margin-top: 10px; }
+        
+        /* DE RESETKNOP STYLING */
+        .btn-reset { 
+            background: #dc3545; 
+            color: white; 
+            padding: 12px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            width: 100%; 
+            font-size: 16px; 
+            margin-top: 15px; 
+            display: block;
+        }
+
         .btn-wb { position: absolute; right: 20px; top: 20px; padding: 10px 15px; background: var(--goud); border: none; border-radius: 4px; font-weight: bold; cursor: pointer; z-index: 10; }
 
-        /* Whiteboard Overlay */
         #whiteboard-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 1000; flex-direction: column; }
         .wb-toolbar { background: var(--polblauw); padding: 10px; display: flex; gap: 10px; align-items: center; color: white; }
         #wb-canvas { flex-grow: 1; cursor: crosshair; touch-action: none; }
@@ -70,7 +80,7 @@
     <div id="questions-container"></div>
     
     <button class="btn-main" onclick="checkAnswers()">CONTROLEER & OPSLAAN</button>
-    <button class="btn-reset" onclick="resetExercise()">RESET OEFENING</button>
+    <button class="btn-reset" onclick="resetExercise()">WIS ALLES & OPNIEUW BEGINNEN</button>
 
     <div id="leaderboard">
         <h3 style="margin-top:0; text-align:center;">🏆 Ranglijst (Live)</h3>
@@ -88,7 +98,6 @@
 </div>
 
 <script>
-    // 1. DATA: 20 JUSTITIE ZINNEN
     const exerciseData = [
         { p: "Door mij werd de verdachte staande gehouden.", a: "Ik hield de verdachte staande" },
         { p: "Door mij werd het proces-verbaal opgemaakt.", a: "Ik maakte het proces-verbaal op" },
@@ -112,7 +121,6 @@
         { p: "Door mij werd de fouillering uitgevoerd.", a: "Ik voerde de fouillering uit" }
     ];
 
-    // 2. VRAGEN GENEREREN
     const container = document.getElementById('questions-container');
     exerciseData.forEach((item, index) => {
         container.innerHTML += `
@@ -124,7 +132,6 @@
         `;
     });
 
-    // 3. FIREBASE SETUP
     const firebaseConfig = {
         apiKey: "AIzaSyBj8dXkl1rEfyx54_MDy_tYd2P7kAeU8VQ",
         authDomain: "q2les3samirgem.firebaseapp.com",
@@ -137,7 +144,6 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // 4. CORRECTIE & TIPS
     function checkAnswers() {
         let score = 0;
         exerciseData.forEach((item, index) => {
@@ -171,9 +177,9 @@
         }
     }
 
-    // RESET FUNCTIE
+    // DE RESET FUNCTIE
     function resetExercise() {
-        if(confirm("Weet je zeker dat je alle antwoorden wilt wissen?")) {
+        if(confirm("Weet je zeker dat je alles wilt wissen?")) {
             exerciseData.forEach((item, index) => {
                 const inputEl = document.getElementById(`input-${index}`);
                 const tipEl = document.getElementById(`tip-${index}`);
@@ -185,7 +191,6 @@
         }
     }
 
-    // 5. LIVE LEADERBOARD
     db.ref('scores').orderByChild('score').on('value', snap => {
         const board = document.getElementById('leaderboard-body');
         board.innerHTML = "";
@@ -196,7 +201,6 @@
         });
     });
 
-    // 6. WHITEBOARD LOGICA (SAMENGEVAT)
     const canvas = document.getElementById('wb-canvas');
     const ctx = canvas.getContext('2d');
     let drawing = false, mode = 'draw', color = '#1d4e89', lastX = 0, lastY = 0;
