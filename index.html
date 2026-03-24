@@ -29,7 +29,6 @@
 
         .btn-main { background: var(--polblauw); color: white; padding: 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; font-size: 18px; margin-top: 20px; }
         
-        /* DE RESETKNOP STYLING */
         .btn-reset { 
             background: #dc3545; 
             color: white; 
@@ -80,7 +79,7 @@
     <div id="questions-container"></div>
     
     <button class="btn-main" onclick="checkAnswers()">CONTROLEER & OPSLAAN</button>
-    <button class="btn-reset" onclick="resetExercise()">WIS ALLES & OPNIEUW BEGINNEN</button>
+    <button class="btn-reset" onclick="resetExercise()">WIS ALLES (INCL. RANGLIJST)</button>
 
     <div id="leaderboard">
         <h3 style="margin-top:0; text-align:center;">🏆 Ranglijst (Live)</h3>
@@ -177,9 +176,10 @@
         }
     }
 
-    // DE RESET FUNCTIE
+    // AANGEPASTE RESET FUNCTIE: WIST NU OOK DE DATABASE
     function resetExercise() {
-        if(confirm("Weet je zeker dat je alles wilt wissen?")) {
+        if(confirm("DIT WIST DE HELE RANGLIJST EN ALLE ANTWOORDEN. Weet je het zeker?")) {
+            // 1. Wis lokale velden
             exerciseData.forEach((item, index) => {
                 const inputEl = document.getElementById(`input-${index}`);
                 const tipEl = document.getElementById(`tip-${index}`);
@@ -187,6 +187,10 @@
                 inputEl.className = "input-field";
                 tipEl.style.display = "none";
             });
+            
+            // 2. Wis de ranglijst in Firebase
+            db.ref('scores').set(null);
+            
             window.scrollTo({top: 0, behavior: 'smooth'});
         }
     }
