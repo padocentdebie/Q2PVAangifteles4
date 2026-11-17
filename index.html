@@ -1255,6 +1255,9 @@
     /* 3. SCHERM 3 — CHATBOT HANS */
     const HANS_FACTS = {
         wie_hans: 'Ik ben Hans Koelstra, de manager van supermarkt Vers & Voordelig.',
+        id_kaart: 'Ja hoor, natuurlijk. Hier heeft u mijn Nederlandse identiteitskaart (nummer ID123456789). Mijn volledige naam is Hans van Dijk en ik ben geboren op 14 mei 1974 in Winterswijk.',
+        geboorte: 'Ik ben geboren op 14 mei 1974 in Winterswijk.',
+        contact_prive: 'Mijn woonadres is Dorpsstraat 45, 1234 AB in Winkelstad en mijn telefoonnummer is 06-12345678.',
         waar_adres: 'U bent hier in mijn supermarkt, Vers & Voordelig aan het Plein 12 in Winkelstad.',
         ID_gegevens: 'Ja hoor, Hans Koelstra, geboren in Winterswijk, 21 januari 1995.',
         wanneer: 'Het is zojuist gebeurd, ongeveer twintig minuten voordat u hier arriveert.',
@@ -1366,8 +1369,9 @@
         return null;
     }
 
-    function suggestRemainingTopics() {
+   function suggestRemainingTopics(alreadyMentioned = true) {
         const hints = [];
+        if (!hansState.revealed.has('id_kaart')) hints.push('mijn identiteitsgegevens');
         if (!hansState.revealed.has('waar_adres') || !hansState.revealed.has('wanneer')) hints.push('waar of wanneer het precies plaatsvindt');
         if (!['stap1_olijfolie','stap2_kaas','stap3_tandpasta','stap4_kassa','stap5_aanhouding'].every(k => hansState.revealed.has(k))) hints.push('het verdere verloop in de winkel');
         if (!hansState.revealed.has('signalement_basis') || !hansState.revealed.has('signalement_kleding')) hints.push('het signalement van de dame');
@@ -1376,7 +1380,8 @@
         if (!hansState.revealed.has('toestemming') || !hansState.revealed.has('aangifte_wens')) hints.push('mijn aangifte en toestemming');
         if (!hansState.revealed.has('decor_omgeving')) hints.push('de omgeving bij de kassa’s');
         if (hints.length === 0) return 'Volgens mij heb ik u inmiddels alle relevante feiten en details verteld. Kunt u daar uw proces-verbaal mee opstellen?';
-        return `Dat onderdeel heb ik net al genoemd. Als het helpt, kan ik u nog wel iets vertellen over ${hints.slice(0,2).join(' of ')}.`;
+        const prefix = alreadyMentioned ? 'Dat onderdeel heb ik net al genoemd. ' : '';
+        return `${prefix}Als het helpt, kan ik u nog wel iets vertellen over ${hints.slice(0,2).join(' of ')}.`;
     }
 
     function generateHansReply(rawInput) {
