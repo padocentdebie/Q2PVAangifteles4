@@ -537,6 +537,81 @@
         .status-banner.warn { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
         .status-banner.done { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
 
+        /* ================= SCHERM: REDENEN VAN WETENSCHAP ================= */
+        .wetenschap-voorbeeld-box {
+            background: #ffffff;
+            border: 2px solid #93c5fd;
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-top: 12px;
+            font-size: 16px;
+            line-height: 1.65;
+            font-style: normal;
+            color: #0f172a;
+        }
+
+        .wetenschap-auto-info {
+            background: #fffbeb;
+            border: 1.5px solid #fcd34d;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-top: 12px;
+            font-size: 15.5px;
+            line-height: 1.6;
+            font-style: normal;
+            color: #0f172a;
+        }
+
+        .wetenschap-item {
+            padding: 16px 18px;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-left: 4px solid var(--primary-blue);
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .wetenschap-prompt {
+            font-size: 16px;
+            font-weight: 700;
+            font-style: normal;
+            color: #0f172a;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .wetenschap-input {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1.5px solid #94a3b8;
+            border-radius: 8px;
+            font-size: 15.5px;
+            font-style: normal;
+            font-family: inherit;
+            color: #0f172a;
+            background: #ffffff;
+        }
+
+        .wetenschap-input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(29, 78, 137, 0.14);
+        }
+
+        .wetenschap-input.missing-warn { border-color: var(--accent-gold); background: #fffbeb; }
+        .wetenschap-input.is-correct { border-color: var(--success-green); background: #f0fdf4; color: #166534; font-weight: 700; }
+        .wetenschap-input.is-wrong { border-color: var(--danger-red); background: #fef2f2; color: #991b1b; font-weight: 700; }
+
+        .wetenschap-feedback {
+            margin-top: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            font-style: normal;
+            line-height: 1.55;
+        }
+        .wetenschap-feedback.good { color: var(--success-green); }
+        .wetenschap-feedback.bad { color: var(--danger-red); }
+
         /* ================= SCHERM 3: DOSSIER HANS & PV ================= */
         .hans-grid {
             display: grid;
@@ -1240,6 +1315,7 @@
     </div>
     <nav class="nav-tabs">
         <button class="nav-btn active" data-screen="stijl" onclick="switchScreen('stijl')">📝 Stijl</button>
+        <button class="nav-btn" data-screen="wetenschap" onclick="switchScreen('wetenschap')">🔍 Redenen van wetenschap</button>
         <button class="nav-btn" data-screen="hans" onclick="switchScreen('hans')">🕵️ Aangifte Hans</button>
         <button class="nav-btn" data-screen="snake" onclick="switchScreen('snake')">🐍 Woordenschat Snake</button>
         <button class="nav-btn" data-screen="scoreboard" onclick="switchScreen('scoreboard')">🏆 Scoreboard</button>
@@ -1394,6 +1470,52 @@
             <button class="btn-reset" onclick="resetExercise2()">Reset oefening 2</button>
         </div>
         <div id="ex2Banner" class="status-banner hidden"></div>
+    </div>
+</section>
+
+<!-- ==================== SCHERM: REDENEN VAN WETENSCHAP ==================== -->
+<section id="screen-wetenschap" class="page-container hidden">
+    <div class="card">
+        <h2 class="section-header">Redenen van wetenschap (20 opgaven)</h2>
+
+        <div class="instructie-blok instructie-met-gif">
+            <div class="instructie-tekst-col">
+                <h3>Instructie</h3>
+                <p style="margin:0 0 8px 0; font-size:15.5px; font-style:normal;">
+                    <strong>Schrijf elke zin volledig om naar de actieve vorm in de verleden tijd (redenen van wetenschap).</strong>
+                    Noteer wat je waarnam met <strong>Ik zag dat ...</strong> en gebruik daarbij automatisch jouw ingelogde naam en de dag, datum en tijd.
+                    Als er bij de <strong>Officier van Justitie</strong>, <strong>hulpofficier van justitie</strong> of <strong>eigenaar</strong> een naam genoteerd moet worden, vul je daar ook automatisch jouw eigen naam in.
+                </p>
+
+                <div class="wetenschap-auto-info" id="wetenschapAutoInfo"></div>
+
+                <div class="wetenschap-voorbeeld-box" id="wetenschapVoorbeeldBox"></div>
+
+                <p style="margin:12px 0 0 0; font-size:15px; font-style:normal; color:#0f172a;">
+                    <strong>Let op:</strong> Voer bij alle 20 opgaven de volledige zin in. De antwoorden worden pas zichtbaar nadat alle 20 zinnen zijn ingevuld.
+                </p>
+            </div>
+            <div class="gif-box">
+                <img src="giphy (4).gif" alt="Redenen van wetenschap illustratie"
+                     onerror="this.style.display='none'; document.getElementById('wetenschapGifFallback').classList.remove('hidden');">
+                <div id="wetenschapGifFallback" class="gif-fallback hidden">
+                    Bestand <code>giphy (4).gif</code> niet gevonden in deze map.
+                </div>
+            </div>
+        </div>
+
+        <div class="progress-bar-row">
+            <span id="wetenschapProgress">Ingevuld: 0 / 20 zinnen</span>
+            <span id="wetenschapScoreTag"></span>
+        </div>
+
+        <div id="wetenschapList"></div>
+
+        <div class="btn-row">
+            <button class="btn-check" onclick="checkWetenschapExercise()">Controleer &amp; Toon antwoorden</button>
+            <button class="btn-reset" onclick="resetWetenschapExercise()">Reset oefening</button>
+        </div>
+        <div id="wetenschapBanner" class="status-banner hidden"></div>
     </div>
 </section>
 
@@ -1739,6 +1861,7 @@
 
         document.getElementById('scoreboardKlasFilter').value = currentUser.klas;
 
+        initWetenschapExercise();
         loadPvDraft();
         attachClassFeedListener(currentUser.klas);
         attachScoreboardListener(currentUser.klas);
@@ -1755,7 +1878,7 @@
         activeScreen = 'login';
         document.body.classList.remove('snake-mode');
         document.getElementById('topbar').classList.add('hidden');
-        ['stijl', 'hans', 'snake', 'scoreboard'].forEach(s => {
+        ['stijl', 'wetenschap', 'hans', 'snake', 'scoreboard'].forEach(s => {
             document.getElementById('screen-' + s).classList.add('hidden');
         });
         document.getElementById('screen-login').classList.remove('hidden');
@@ -1769,7 +1892,7 @@
         }
 
         activeScreen = name;
-        ['stijl', 'hans', 'snake', 'scoreboard'].forEach(s => {
+        ['stijl', 'wetenschap', 'hans', 'snake', 'scoreboard'].forEach(s => {
             document.getElementById('screen-' + s).classList.toggle('hidden', s !== name);
         });
         document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -1807,12 +1930,13 @@
 
     function resetAllExercisesAndTexts() {
         const ok = confirm(
-            'Weet je zeker dat je ALLE ingevulde oefeningen (Stijl Oefening 1 & 2), jouw getypte PV-tekst en het gesprek met Hans wilt wissen?'
+            'Weet je zeker dat je ALLE ingevulde oefeningen (Stijl Oefening 1 & 2, Redenen van wetenschap), jouw getypte PV-tekst en het gesprek met Hans wilt wissen?'
         );
         if (!ok) return;
 
         resetExercise1();
         resetExercise2();
+        resetWetenschapExercise();
         clearPvText(false);
         document.getElementById('chatInput').value = '';
         resetHansChat();
@@ -2096,6 +2220,382 @@
         document.getElementById('ex2ScoreTag').textContent = '';
         document.getElementById('ex2Banner').classList.add('hidden');
         updateEx2Progress();
+    }
+
+    /* ============================================================================
+       2B. SCHERM: REDENEN VAN WETENSCHAP (20 OPGAVEN)
+       ============================================================================ */
+    const WETENSCHAP_DATA = [
+        {
+            prompt: 'De verdachte werd staande gehouden.',
+            model: (n, dt) => `Ik zag dat ${n} de verdachte op ${dt} staande hield.`,
+            patterns: [
+                '^ik zag dat {N} de verdachte op {DT} staande hield$',
+                '^ik zag dat {N} op {DT} de verdachte staande hield$'
+            ]
+        },
+        {
+            prompt: 'Het proces-verbaal werd opgemaakt.',
+            model: (n, dt) => `Ik zag dat ${n} het proces-verbaal op ${dt} opmaakte.`,
+            patterns: [
+                '^ik zag dat {N} het proces[- ]verbaal op {DT} opmaakte$',
+                '^ik zag dat {N} op {DT} het proces[- ]verbaal opmaakte$'
+            ]
+        },
+        {
+            prompt: 'De getuige werd gehoord op het bureau.',
+            model: (n, dt) => `Ik zag dat ${n} de getuige op ${dt} op het bureau hoorde.`,
+            patterns: [
+                '^ik (?:zag|hoorde) dat {N} de getuige op {DT} op het bureau hoorde$',
+                '^ik (?:zag|hoorde) dat {N} de getuige op het bureau op {DT} hoorde$',
+                '^ik (?:zag|hoorde) dat {N} op {DT} de getuige op het bureau hoorde$',
+                '^ik (?:zag|hoorde) dat {N} op {DT} op het bureau de getuige hoorde$',
+                '^ik (?:zag|hoorde) dat {N} op het bureau op {DT} de getuige hoorde$',
+                '^ik (?:zag|hoorde) dat {N} de getuige op {DT} hoorde op het bureau$'
+            ]
+        },
+        {
+            prompt: 'De woning werd doorzocht na toestemming.',
+            model: (n, dt) => `Ik zag dat ${n} de woning op ${dt} na toestemming doorzocht.`,
+            patterns: [
+                '^ik zag dat {N} de woning op {DT} na toestemming doorzocht$',
+                '^ik zag dat {N} de woning na toestemming op {DT} doorzocht$',
+                '^ik zag dat {N} op {DT} de woning na toestemming doorzocht$',
+                '^ik zag dat {N} na toestemming op {DT} de woning doorzocht$',
+                '^ik zag dat {N} de woning op {DT} doorzocht na toestemming$',
+                '^ik zag dat {N} op {DT} na toestemming de woning doorzocht$'
+            ]
+        },
+        {
+            prompt: 'De bewijslast werd veiliggesteld.',
+            model: (n, dt) => `Ik zag dat ${n} de bewijslast op ${dt} veiligstelde.`,
+            patterns: [
+                '^ik zag dat {N} de bewijslast op {DT} veiligstelde$',
+                '^ik zag dat {N} op {DT} de bewijslast veiligstelde$'
+            ]
+        },
+        {
+            prompt: 'Er werd assistentie gevraagd via de portofoon.',
+            model: (n, dt) => `Ik zag dat ${n} op ${dt} via de portofoon assistentie vroeg.`,
+            patterns: [
+                '^ik (?:zag|hoorde) dat {N} op {DT} via de portofoon assistentie vroeg$',
+                '^ik (?:zag|hoorde) dat {N} op {DT} assistentie via de portofoon vroeg$',
+                '^ik (?:zag|hoorde) dat {N} op {DT} assistentie vroeg via de portofoon$',
+                '^ik (?:zag|hoorde) dat {N} via de portofoon op {DT} assistentie vroeg$',
+                '^ik (?:zag|hoorde) dat {N} assistentie op {DT} via de portofoon vroeg$',
+                '^ik (?:zag|hoorde) dat {N} assistentie via de portofoon op {DT} vroeg$'
+            ]
+        },
+        {
+            prompt: 'De alcoholtest werd afgenomen.',
+            model: (n, dt) => `Ik zag dat ${n} de alcoholtest op ${dt} afnam.`,
+            patterns: [
+                '^ik zag dat {N} de alcoholtest op {DT} afnam$',
+                '^ik zag dat {N} op {DT} de alcoholtest afnam$'
+            ]
+        },
+        {
+            prompt: 'Het voertuig werd gecontroleerd op drugs.',
+            model: (n, dt) => `Ik zag dat ${n} het voertuig op ${dt} op drugs controleerde.`,
+            patterns: [
+                '^ik zag dat {N} het voertuig op {DT} op drugs controleerde$',
+                '^ik zag dat {N} op {DT} het voertuig op drugs controleerde$',
+                '^ik zag dat {N} het voertuig op drugs op {DT} controleerde$',
+                '^ik zag dat {N} het voertuig op {DT} controleerde op drugs$'
+            ]
+        },
+        {
+            prompt: 'De aangifte van diefstal werd opgenomen.',
+            model: (n, dt) => `Ik zag dat ${n} de aangifte van diefstal op ${dt} opnam.`,
+            patterns: [
+                '^ik zag dat {N} de aangifte van diefstal op {DT} opnam$',
+                '^ik zag dat {N} op {DT} de aangifte van diefstal opnam$'
+            ]
+        },
+        {
+            prompt: 'De achtervolging werd ingezet.',
+            model: (n, dt) => `Ik zag dat ${n} de achtervolging op ${dt} inzette.`,
+            patterns: [
+                '^ik zag dat {N} de achtervolging op {DT} inzette$',
+                '^ik zag dat {N} op {DT} de achtervolging inzette$'
+            ]
+        },
+        {
+            prompt: 'De boete werd direct uitgeschreven.',
+            model: (n, dt) => `Ik zag dat ${n} de boete op ${dt} direct uitschreef.`,
+            patterns: [
+                '^ik zag dat {N} de boete op {DT} direct uitschreef$',
+                '^ik zag dat {N} de boete direct op {DT} uitschreef$',
+                '^ik zag dat {N} op {DT} direct de boete uitschreef$',
+                '^ik zag dat {N} op {DT} de boete direct uitschreef$',
+                '^ik zag dat {N} direct op {DT} de boete uitschreef$'
+            ]
+        },
+        {
+            prompt: 'Het signalement werd verspreid.',
+            model: (n, dt) => `Ik zag dat ${n} het signalement op ${dt} verspreidde.`,
+            patterns: [
+                '^ik zag dat {N} het signalement op {DT} verspreidde$',
+                '^ik zag dat {N} op {DT} het signalement verspreidde$'
+            ]
+        },
+        {
+            prompt: 'Er werd contact opgenomen met de Officier van Justitie.',
+            model: (n, dt) => `Ik zag dat ${n} op ${dt} contact opnam met de Officier van Justitie ${n}.`,
+            patterns: [
+                '^ik (?:zag|hoorde) dat {N} op {DT} contact opnam met (?:de )?officier van justitie {N}$',
+                '^ik (?:zag|hoorde) dat {N} op {DT} met (?:de )?officier van justitie {N} contact opnam$',
+                '^ik (?:zag|hoorde) dat {N} contact opnam op {DT} met (?:de )?officier van justitie {N}$',
+                '^ik (?:zag|hoorde) dat {N} met (?:de )?officier van justitie {N} op {DT} contact opnam$',
+                '^ik (?:zag|hoorde) dat {N} contact op {DT} opnam met (?:de )?officier van justitie {N}$'
+            ]
+        },
+        {
+            prompt: 'De camerabeveiliging werd uitgelezen.',
+            model: (n, dt) => `Ik zag dat ${n} de camerabeveiliging op ${dt} uitlas.`,
+            patterns: [
+                '^ik zag dat {N} de camerabeveiliging op {DT} uitlas$',
+                '^ik zag dat {N} op {DT} de camerabeveiliging uitlas$'
+            ]
+        },
+        {
+            prompt: 'Het gebied werd afgezet voor onderzoek.',
+            model: (n, dt) => `Ik zag dat ${n} het gebied op ${dt} voor onderzoek afzette.`,
+            patterns: [
+                '^ik zag dat {N} het gebied op {DT} voor onderzoek afzette$',
+                '^ik zag dat {N} op {DT} het gebied voor onderzoek afzette$',
+                '^ik zag dat {N} het gebied voor onderzoek op {DT} afzette$',
+                '^ik zag dat {N} het gebied op {DT} afzette voor onderzoek$',
+                '^ik zag dat {N} op {DT} het gebied afzette voor onderzoek$'
+            ]
+        },
+        {
+            prompt: 'De verdachte werd voorgeleid aan de hulpofficier.',
+            model: (n, dt) => `Ik zag dat ${n} de verdachte op ${dt} voorleidde aan de hulpofficier ${n}.`,
+            patterns: [
+                '^ik zag dat {N} de verdachte op {DT} voorleidde aan (?:de )?hulpofficier(?: van justitie)? {N}$',
+                '^ik zag dat {N} de verdachte op {DT} aan (?:de )?hulpofficier(?: van justitie)? {N} voorleidde$',
+                '^ik zag dat {N} op {DT} de verdachte voorleidde aan (?:de )?hulpofficier(?: van justitie)? {N}$',
+                '^ik zag dat {N} op {DT} de verdachte aan (?:de )?hulpofficier(?: van justitie)? {N} voorleidde$',
+                '^ik zag dat {N} de verdachte aan (?:de )?hulpofficier(?: van justitie)? {N} op {DT} voorleidde$'
+            ]
+        },
+        {
+            prompt: 'De gestolen fiets werd teruggegeven aan de eigenaar.',
+            model: (n, dt) => `Ik zag dat ${n} de gestolen fiets op ${dt} teruggaf aan de eigenaar ${n}.`,
+            patterns: [
+                '^ik zag dat {N} de gestolen fiets op {DT} teruggaf aan (?:de )?eigenaar {N}$',
+                '^ik zag dat {N} de gestolen fiets op {DT} aan (?:de )?eigenaar {N} teruggaf$',
+                '^ik zag dat {N} op {DT} de gestolen fiets teruggaf aan (?:de )?eigenaar {N}$',
+                '^ik zag dat {N} op {DT} de gestolen fiets aan (?:de )?eigenaar {N} teruggaf$',
+                '^ik zag dat {N} de gestolen fiets aan (?:de )?eigenaar {N} op {DT} teruggaf$'
+            ]
+        },
+        {
+            prompt: 'Er werd een waarschuwing gegeven aan de overlastgever.',
+            model: (n, dt) => `Ik zag dat ${n} op ${dt} een waarschuwing gaf aan de overlastgever.`,
+            patterns: [
+                '^ik (?:zag|hoorde) dat {N} op {DT} een waarschuwing gaf aan de overlastgever$',
+                '^ik (?:zag|hoorde) dat {N} op {DT} aan de overlastgever een waarschuwing gaf$',
+                '^ik (?:zag|hoorde) dat {N} een waarschuwing op {DT} gaf aan de overlastgever$',
+                '^ik (?:zag|hoorde) dat {N} aan de overlastgever op {DT} een waarschuwing gaf$',
+                '^ik (?:zag|hoorde) dat {N} op {DT} een waarschuwing aan de overlastgever gaf$'
+            ]
+        },
+        {
+            prompt: 'Het proces-verbaal van bevindingen werd getypt.',
+            model: (n, dt) => `Ik zag dat ${n} het proces-verbaal van bevindingen op ${dt} typte.`,
+            patterns: [
+                '^ik zag dat {N} het proces[- ]verbaal van bevindingen op {DT} typte$',
+                '^ik zag dat {N} op {DT} het proces[- ]verbaal van bevindingen typte$'
+            ]
+        },
+        {
+            prompt: 'De fouillering werd uitgevoerd.',
+            model: (n, dt) => `Ik zag dat ${n} de fouillering op ${dt} uitvoerde.`,
+            patterns: [
+                '^ik zag dat {N} de fouillering op {DT} uitvoerde$',
+                '^ik zag dat {N} op {DT} de fouillering uitvoerde$'
+            ]
+        }
+    ];
+
+    let wetenschapRefDate = new Date();
+    let wetenschapDateTimeStr = '';
+
+    function getWetenschapDateTimeStr(dateObj) {
+        const dagen = ['zondag', 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag'];
+        const maanden = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus', 'september', 'oktober', 'november', 'december'];
+        const dag = dagen[dateObj.getDay()];
+        const numDag = dateObj.getDate();
+        const maand = maanden[dateObj.getMonth()];
+        const jaar = dateObj.getFullYear();
+        const hh = String(dateObj.getHours()).padStart(2, '0');
+        const mm = String(dateObj.getMinutes()).padStart(2, '0');
+        return `${dag} ${numDag} ${maand} ${jaar} om ${hh}:${mm} uur`;
+    }
+
+    function escapeRegex(str) {
+        return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    function initWetenschapExercise() {
+        wetenschapRefDate = new Date();
+        wetenschapDateTimeStr = getWetenschapDateTimeStr(wetenschapRefDate);
+        renderWetenschapExercise();
+    }
+
+    function renderWetenschapExercise() {
+        const studentNaam = currentUser ? currentUser.voornaam : 'Student';
+        const dtStr = wetenschapDateTimeStr || getWetenschapDateTimeStr(new Date());
+
+        document.getElementById('wetenschapAutoInfo').innerHTML = `
+            <div><strong>Ingelogde student:</strong> ${escapeHtml(studentNaam)}</div>
+            <div><strong>Automatische dag, datum en tijd:</strong> ${escapeHtml(dtStr)}</div>
+        `;
+
+        document.getElementById('wetenschapVoorbeeldBox').innerHTML = `
+            <div style="font-weight:800; color:#1d4e89; margin-bottom:6px;">Voorbeeld:</div>
+            <div style="margin-bottom:4px;"><strong>Opgave:</strong> "De verdachte werd aangehouden."</div>
+            <div><strong>Antwoord:</strong> "Ik zag dat ${escapeHtml(studentNaam)} de verdachte op ${escapeHtml(dtStr)} aanhield."</div>
+        `;
+
+        const list = document.getElementById('wetenschapList');
+        list.innerHTML = '';
+        WETENSCHAP_DATA.forEach((item, idx) => {
+            const div = document.createElement('div');
+            div.className = 'wetenschap-item';
+            div.innerHTML = `
+                <div class="wetenschap-prompt">${idx + 1}. ${escapeHtml(item.prompt)}</div>
+                <input type="text" class="wetenschap-input" data-idx="${idx}"
+                       placeholder="Typ hier de volledige zin (Ik zag dat ...)"
+                       oninput="updateWetenschapProgress()">
+                <div class="wetenschap-feedback hidden" id="wetenschap-ans-${idx}"></div>
+            `;
+            list.appendChild(div);
+        });
+
+        document.getElementById('wetenschapScoreTag').textContent = '';
+        document.getElementById('wetenschapBanner').classList.add('hidden');
+        updateWetenschapProgress();
+    }
+
+    function updateWetenschapProgress() {
+        const inputs = document.querySelectorAll('.wetenschap-input');
+        let filled = 0;
+        inputs.forEach(inp => {
+            if (inp.value.trim().length > 0) {
+                filled++;
+                inp.classList.remove('missing-warn');
+            }
+        });
+        document.getElementById('wetenschapProgress').textContent = `Ingevuld: ${filled} / ${WETENSCHAP_DATA.length} zinnen`;
+    }
+
+    function normalizeWetenschapSentence(rawInput) {
+        let s = String(rawInput || '').trim().toLowerCase()
+            .replace(/[.!?]+$/g, '')
+            .replace(/\s+/g, ' ');
+
+        const maanden = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus', 'september', 'oktober', 'november', 'december'];
+        const d = wetenschapRefDate || new Date();
+        const dayNum = d.getDate();
+        const monthName = maanden[d.getMonth()];
+        const monthNum = d.getMonth() + 1;
+        const year = d.getFullYear();
+
+        const datePattern = `(?:(?:zondag|maandag|dinsdag|woensdag|donderdag|vrijdag|zaterdag)\\s+)?(?:${dayNum}\\s+${monthName}\\s+${year}|0?${dayNum}[-/]0?${monthNum}[-/]${year})(?:\\s+om)?\\s+(\\d{1,2})[:.](\\d{2})(?:\\s*uur)?`;
+        const dtRegex = new RegExp(datePattern, 'i');
+        const match = s.match(dtRegex);
+
+        if (match) {
+            const typedHour = parseInt(match[1], 10);
+            const typedMin = parseInt(match[2], 10);
+            const typedTotalMins = typedHour * 60 + typedMin;
+
+            const refMins = d.getHours() * 60 + d.getMinutes();
+            const now = new Date();
+            const nowMins = now.getHours() * 60 + now.getMinutes();
+
+            if (Math.abs(typedTotalMins - refMins) <= 15 || Math.abs(typedTotalMins - nowMins) <= 15) {
+                s = s.replace(dtRegex, '{DT}');
+            }
+        }
+
+        const studentNaamLower = (currentUser ? currentUser.voornaam : '').trim().toLowerCase();
+        if (studentNaamLower) {
+            const nameRegex = new RegExp(`(^|\\s)${escapeRegex(studentNaamLower)}(?=\\s|$)`, 'g');
+            s = s.replace(nameRegex, '$1{N}');
+        }
+
+        return s.replace(/\s+/g, ' ').trim();
+    }
+
+    function checkWetenschapExercise() {
+        const inputs = document.querySelectorAll('.wetenschap-input');
+        const banner = document.getElementById('wetenschapBanner');
+        let missing = 0;
+
+        inputs.forEach(inp => {
+            if (!inp.value.trim()) {
+                missing++;
+                inp.classList.add('missing-warn');
+            } else {
+                inp.classList.remove('missing-warn');
+            }
+        });
+
+        if (missing > 0) {
+            banner.className = 'status-banner warn';
+            banner.textContent = `Vul eerst ALLE 20 zinnen volledig in voordat de antwoorden beschikbaar zijn! Er ontbreken nog ${missing} zinnen.`;
+            banner.classList.remove('hidden');
+            const firstEmpty = Array.from(inputs).find(i => !i.value.trim());
+            if (firstEmpty) firstEmpty.focus();
+            return;
+        }
+
+        const studentNaam = currentUser ? currentUser.voornaam : 'Student';
+        const dtStr = wetenschapDateTimeStr || getWetenschapDateTimeStr(new Date());
+        let correctCount = 0;
+
+        inputs.forEach(inp => {
+            const idx = parseInt(inp.dataset.idx, 10);
+            const item = WETENSCHAP_DATA[idx];
+            const norm = normalizeWetenschapSentence(inp.value);
+
+            const isOk = item.patterns.some(pat => {
+                const regex = new RegExp(pat);
+                return regex.test(norm);
+            });
+
+            const fbEl = document.getElementById(`wetenschap-ans-${idx}`);
+            fbEl.classList.remove('hidden', 'good', 'bad');
+            inp.classList.remove('is-correct', 'is-wrong');
+
+            const modelSentence = item.model(studentNaam, dtStr);
+
+            if (isOk) {
+                correctCount++;
+                inp.classList.add('is-correct');
+                fbEl.classList.add('good');
+                fbEl.textContent = `✓ Goed! Voorbeeldzin: ${modelSentence}`;
+            } else {
+                inp.classList.add('is-wrong');
+                fbEl.classList.add('bad');
+                fbEl.textContent = `✗ Juist antwoord: ${modelSentence}`;
+            }
+        });
+
+        document.getElementById('wetenschapScoreTag').textContent = `Score: ${correctCount} / ${WETENSCHAP_DATA.length}`;
+        banner.className = 'status-banner done';
+        banner.textContent = `Oefening nagekeken! Je hebt ${correctCount} van de ${WETENSCHAP_DATA.length} zinnen goed geschreven.`;
+        banner.classList.remove('hidden');
+    }
+
+    function resetWetenschapExercise() {
+        wetenschapRefDate = new Date();
+        wetenschapDateTimeStr = getWetenschapDateTimeStr(wetenschapRefDate);
+        renderWetenschapExercise();
     }
 
     /* ============================================================================
