@@ -1222,7 +1222,11 @@
         let correctCount = 0;
         inputs.forEach(inp => {
             const idx = parseInt(inp.dataset.idx,10), item = WETENSCHAP_DATA[idx], norm = normalizeWetenschapSentence(inp.value);
-            const isOk = item.patterns.some(pat => new RegExp(pat).test(norm));
+            const frontMatch = norm.match(/^op \{DT\},? (zag|hoorde) ik dat (.+)$/);             
+            const isOk = item.patterns.some(pat => new RegExp(pat).test(norm)) ||                 
+                Boolean(frontMatch && item.patterns.some(pat =>                     
+                    new RegExp(pat.replace(/ op \{DT\}/g, '')).test(`ik ${frontMatch[1]} dat ${frontMatch[2]}`)
+                ));
             const fbEl = document.getElementById(`wetenschap-ans-${idx}`);
             fbEl.classList.remove('hidden','good','bad'); inp.classList.remove('is-correct','is-wrong');
             const modelSentence = item.model(studentNaam, dtStr);
