@@ -262,6 +262,13 @@
         .msg-bubble { padding: 10px 14px; border-radius: 12px; font-size: 14.5px; line-height: 1.48; word-wrap: break-word; }
         .msg-row.hans .msg-bubble { background: white; border: 1px solid #cbd5e1; color: var(--text-main); border-bottom-left-radius: 3px; }
         .msg-row.student .msg-bubble { background: var(--primary-blue); color: white; border-bottom-right-radius: 3px; }
+        .chat-evidence-link { display: block; margin-top: 10px; text-decoration: none; }
+        .chat-evidence-img {
+            display: block; width: 100%; max-width: 360px; border-radius: 8px;
+            border: 1.5px solid #94a3b8; cursor: zoom-in; transition: transform 0.15s;
+        }
+        .chat-evidence-img:hover { transform: scale(1.015); border-color: var(--primary-blue); }
+        .chat-evidence-caption { font-size: 12px; color: var(--text-muted); margin-top: 5px; }
         .typing-indicator { font-size: 12.5px; color: var(--text-muted); font-style: italic; padding: 0 14px 6px 14px; }
         .chat-input-bar { display: flex; gap: 8px; padding: 10px; background: white; border-top: 1px solid #cbd5e1; }
         .chat-input-bar input {
@@ -1150,7 +1157,7 @@
             div.className = 'wetenschap-item';
             div.innerHTML = `
                 <div class="wetenschap-prompt">${idx + 1}. ${escapeHtml(item.prompt(studentNaam))}</div>
-                <input type="text" class="wetenschap-input" data-idx="${idx}" placeholder="Typ hier de volledige zin in redenen van wetenschap. Voor het gemak wordt vaak jouw eigen naam gebruikt:  (Ik zag dat ${escapeHtml(studentNaam)} ...)" oninput="updateWetenschapProgress()">
+                <input type="text" class="wetenschap-input" data-idx="${idx}" placeholder="Typ hier de volledige zin in redenen van wetenschap. Voor het gemak wordt vaak jouw eigen naam gebruikt: (Ik zag dat ${escapeHtml(studentNaam)} ...)" oninput="updateWetenschapProgress()">
                 <div class="wetenschap-helpers">
                     <button type="button" class="wetenschap-helper-btn" onclick="insertWetenschapToken(${idx}, 'name')">👤 + Naam (${escapeHtml(studentNaam)})</button>
                     <button type="button" class="wetenschap-helper-btn wetenschap-insert-dt-btn" onclick="insertWetenschapToken(${idx}, 'dt')">📅 + Dag, datum &amp; tijd (${escapeHtml(dtStr)})</button>
@@ -1222,9 +1229,9 @@
         let correctCount = 0;
         inputs.forEach(inp => {
             const idx = parseInt(inp.dataset.idx,10), item = WETENSCHAP_DATA[idx], norm = normalizeWetenschapSentence(inp.value);
-            const frontMatch = norm.match(/^op \{DT\},? (zag|hoorde) ik dat (.+)$/);             
-            const isOk = item.patterns.some(pat => new RegExp(pat).test(norm)) ||                 
-                Boolean(frontMatch && item.patterns.some(pat =>                     
+            const frontMatch = norm.match(/^op \{DT\},? (zag|hoorde) ik dat (.+)$/);
+            const isOk = item.patterns.some(pat => new RegExp(pat).test(norm)) ||
+                Boolean(frontMatch && item.patterns.some(pat =>
                     new RegExp(pat.replace(/ op \{DT\}/g, '')).test(`ik ${frontMatch[1]} dat ${frontMatch[2]}`)
                 ));
             const fbEl = document.getElementById(`wetenschap-ans-${idx}`);
@@ -1247,8 +1254,9 @@
 
     /* 3. SCHERM 3 — CHATBOT HANS */
     const HANS_FACTS = {
-        wie_hans: 'Ik ben Hans, de manager van supermarkt Vers & Voordelig.',
+        wie_hans: 'Ik ben Hans Koelstra, de manager van supermarkt Vers & Voordelig.',
         waar_adres: 'U bent hier in mijn supermarkt, Vers & Voordelig aan het Plein 12 in Winkelstad.',
+        ID_gegevens: 'Ja hoor, Hans Koelstra, geboren in Winterswijk, 21 januari 1995.',
         wanneer: 'Het is zojuist gebeurd, ongeveer twintig minuten voordat u hier arriveert.',
         hoe_gezien: 'Ik heb alles live vanaf mijn kantoor op de cameramonitor gezien en de beelden alvast voor u klaargezet.',
         stap1_olijfolie: 'Ik heb gezien dat een dame bij het schap met olijfolie staat. Zij pakt daar een fles en stopt die direct in haar blauwe schoudertas.',
@@ -1278,7 +1286,7 @@
         hansState.revealed.add('wie_hans');
     }
 
-    function appendChatBubble(sender, text) {
+    function appendChatBubble(sender, text, imageSrc = null) {
         const container = document.getElementById('chatMessages');
         const row = document.createElement('div');
         row.className = `msg-row ${sender}`;
@@ -1287,7 +1295,36 @@
         label.textContent = sender === 'hans' ? 'Hans (Aangever)' : (currentUser ? currentUser.voornaam : 'Agent');
         const bubble = document.createElement('div');
         bubble.className = 'msg-bubble';
-        bubble.textContent = text;
+
+        const textEl = document.createElement('div');
+        textEl.textContent = text;
+        bubble.appendChild(textEl);
+
+        if (imageSrc) {
+            const link = document.createElement('a');
+            link.href = imageSrc;
+            link.target = '_blank';
+            link.className = 'chat-evidence-link';
+            link.title = 'Klik om de camerabeelden groter te openen';
+
+            const img = document.createElement('img');
+            img.src = imageSrc;
+            img.alt = 'Camerabeelden Vers & Voordelig';
+            img.className = 'chat-evidence-img';
+            img.onload = () => { container.scrollTop = container.scrollHeight; };
+            img.onerror = () => {
+                link.innerHTML = `<div class="chat-evidence-caption" style="color:var(--danger-red);">Afbeelding <code>${escapeHtml(imageSrc)}</code> niet gevonden in deze map.</div>`;
+            };
+
+            const cap = document.createElement('div');
+            cap.className = 'chat-evidence-caption';
+            cap.textContent = '🔍 Klik op de camerabeelden om ze groter te bekijken.';
+
+            link.appendChild(img);
+            link.appendChild(cap);
+            bubble.appendChild(link);
+        }
+
         row.appendChild(label); row.appendChild(bubble);
         container.appendChild(row);
         container.scrollTop = container.scrollHeight;
@@ -1302,7 +1339,12 @@
         input.value = '';
         const typingEl = document.getElementById('hansTyping');
         typingEl.classList.remove('hidden');
-        setTimeout(() => { typingEl.classList.add('hidden'); appendChatBubble('hans', generateHansReply(raw)); }, 320);
+        setTimeout(() => {
+            typingEl.classList.add('hidden');
+            const reply = generateHansReply(raw);
+            if (typeof reply === 'string') appendChatBubble('hans', reply);
+            else appendChatBubble('hans', reply.text, reply.image || null);
+        }, 320);
     }
 
     function hasAny(text, patterns) { return patterns.some(p => (p instanceof RegExp ? p.test(text) : text.includes(p))); }
@@ -1347,7 +1389,11 @@
         const asksWho = hasAny(q, ['wie bent u','uw naam','hoe heet u','functie','bent u de manager']);
         const asksWhere = hasAny(q, [/\bwaar\b/,'adres','straat','plein','locatie','welke winkel','welke supermarkt','waar zijn we','plaats']);
         const asksWhen = hasAny(q, ['wanneer','hoe laat','tijdstip',/\btijd\b/,'hoelang geleden','vandaag','datum']);
-        const asksHowSeen = hasAny(q, ['hoe weet','hoe heeft u','hoe hebt u','gezien','waargenomen','monitor','camera','beelden','camerabeelden', 'beveiligingsbeelden','scherm','live']);
+        const asksShareFootage =
+            hasAny(q, ['camerabeeld','camera beeld','beveiligingsbeeld','videobeeld','opname','opnames','foto']) ||
+            (hasAny(q, ['beeld','beelden','camera']) && hasAny(q, ['delen','zien','bekijken','tonen','laat','sturen','opsturen','geven','krijgen','heeft u','hebt u','zijn er','mag ik','kan ik','kunt u','wilt u','beschikbaar'])) ||
+            (hansState.lastTopic === 'waarneming' && hasAny(q, ['delen','zien','bekijken','tonen','laat','sturen','opsturen','beschikbaar']));
+        const asksHowSeen = !asksShareFootage && hasAny(q, ['hoe weet','hoe heeft u','hoe hebt u','gezien','waargenomen','monitor','camera','beelden','camerabeelden','beveiligingsbeelden','scherm','live']);
         const asksDecor = hasAny(q, ['omgeving','decor','reclame','display','bord','machines','inrichting','hoe ziet de winkel','hoe zien de kassa']);
         const asksOlive = hasAny(q, ['olijfolie','fles','olie']);
         const asksCheese = hasAny(q, ['kaas','koeling','pakje']);
@@ -1365,13 +1411,14 @@
         const asksReport = hasAny(q, ['aangifte','vervolg','vervolging','aanklacht','straf','wat wilt u','wat wenst u']);
         const isFollowUp = hasAny(q, ['nog meer','verder nog','en verder','en dan','nog iets','aanvulling','details']);
 
-        if (introMatch && !asksWho && !asksWhere && !asksWhen && !asksTimeline && !asksAppearance && !asksDamagePrice && !asksPermission && !asksReport) {
+        if (introMatch && !asksWho && !asksWhere && !asksWhen && !asksShareFootage && !asksHowSeen && !asksDecor && !asksTimeline && !asksAppearance && !asksDamagePrice && !asksPermission && !asksReport) {
             return `Aangenaam${hansState.agentName ? ' agent ' + hansState.agentName : ''}. Fijn dat u de aangifte opneemt. Stelt u gerust uw vragen over wat er zojuist is gebeurd.`;
         }
         if (asksWho) { parts.push(revealFact('wie_hans') || 'Zoals ik net al noemde: ik ben Hans, de winkelmanager hier bij Vers & Voordelig.'); hansState.lastTopic = 'identiteit'; }
         if (asksWhere) { parts.push(revealFact('waar_adres') || 'Dit vindt plaats in onze vestiging aan het Plein 12 in Winkelstad.'); hansState.lastTopic = 'plaats'; }
         if (asksWhen) { parts.push(revealFact('wanneer') || 'Dat is zoals gezegd zojuist gebeurd, pakweg twintig minuten voor uw komst.'); hansState.lastTopic = 'tijd'; }
-       let imageToSend = null;
+
+        let imageToSend = null;
         if (asksShareFootage) {
             if (!hansState.revealed.has('camerabeelden_gedeeld')) {
                 hansState.revealed.add('camerabeelden_gedeeld');
@@ -1452,7 +1499,7 @@
 
         let response = parts.join(' ');
         if (introMatch && hansState.agentName) response = `Goedendag agent ${hansState.agentName}. ` + response;
-        return imageToSend ? { text: response, image: imageToSend } : response;;
+        return imageToSend ? { text: response, image: imageToSend } : response;
     }
 
     /* 4. FIREBASE — PER KLAS INLEVEREN & LIVE FEED ZONDER HICK-UPS */
