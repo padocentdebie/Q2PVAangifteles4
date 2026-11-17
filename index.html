@@ -1255,11 +1255,10 @@
     /* 3. SCHERM 3 — CHATBOT HANS */
     const HANS_FACTS = {
         wie_hans: 'Ik ben Hans Koelstra, de manager van supermarkt Vers & Voordelig.',
-        id_kaart: 'Ja hoor, natuurlijk. Hier heeft u mijn Nederlandse identiteitskaart (nummer ID123456789). Mijn volledige naam is Hans van Dijk en ik ben geboren op 14 mei 1974 in Winterswijk.',
-        geboorte: 'Ik ben geboren op 14 mei 1974 in Winterswijk.',
+        id_kaart: 'Ja hoor, natuurlijk. Hier heeft u mijn Nederlandse identiteitskaart (nummer ID123456789). Mijn volledige naam is Hans Koelstra en ik ben geboren op 21 januari 1995 in Winterswijk.',
+        geboorte: 'Ik ben geboren op 21 januari 1995 in Winterswijk.',
         contact_prive: 'Mijn woonadres is Dorpsstraat 45, 1234 AB in Winkelstad en mijn telefoonnummer is 06-12345678.',
         waar_adres: 'U bent hier in mijn supermarkt, Vers & Voordelig aan het Plein 12 in Winkelstad.',
-        ID_gegevens: 'Ja hoor, Hans Koelstra, geboren in Winterswijk, 21 januari 1995.',
         wanneer: 'Het is zojuist gebeurd, ongeveer twintig minuten voordat u hier arriveert.',
         hoe_gezien: 'Ik heb alles live vanaf mijn kantoor op de cameramonitor gezien en de beelden alvast voor u klaargezet.',
         stap1_olijfolie: 'Ik heb gezien dat een dame bij het schap met olijfolie staat. Zij pakt daar een fles en stopt die direct in haar blauwe schoudertas.',
@@ -1285,7 +1284,7 @@
     function resetHansChat() {
         hansState = { revealed: new Set(), lastTopic: null, agentIntroduced: false, agentName: '' };
         document.getElementById('chatMessages').innerHTML = '';
-        appendChatBubble('hans', 'Goedendag, fijn dat u er bent. Ik ben Hans, manager van supermarkt Vers & Voordelig. Waarmee kan ik u eerst van dienst zijn?');
+        appendChatBubble('hans', 'Goedendag, fijn dat u er bent. Ik ben Hans Koelstra, manager van supermarkt Vers & Voordelig. Waarmee kan ik u eerst van dienst zijn?');
         hansState.revealed.add('wie_hans');
     }
 
@@ -1369,7 +1368,7 @@
         return null;
     }
 
-   function suggestRemainingTopics(alreadyMentioned = true) {
+    function suggestRemainingTopics(alreadyMentioned = true) {
         const hints = [];
         if (!hansState.revealed.has('id_kaart')) hints.push('mijn identiteitsgegevens');
         if (!hansState.revealed.has('waar_adres') || !hansState.revealed.has('wanneer')) hints.push('waar of wanneer het precies plaatsvindt');
@@ -1391,9 +1390,14 @@
         const isGreetingOnly = hasAny(q, [/\bhallo\b/,/\bhoi\b/,/\bgoedemorgen\b/,/\bgoedemiddag\b/,/\bgoedenavond\b/,/\bdag\b/,'ik ben','mijn naam','politie','voorstellen']);
         if (introMatch && !hansState.agentIntroduced) { hansState.agentIntroduced = true; hansState.agentName = introMatch[1]; }
 
+        const asksId = hasAny(q, [/\bid\b/,'id-kaart','id kaart','idkaart','identiteit','identiteitsbewijs','legitim','paspoort','rijbewijs','personalia','uw gegevens','achternaam','volledige naam','bsn']);
+        const asksBirth = hasAny(q, ['geboren','geboortedatum','geboorteplaats','geboorte']);
+        const asksPrivateContact = hasAny(q, ['woont u','woonadres','privéadres','priveadres','thuisadres','telefoon','telefoonnummer','mobiel','email','e-mail','bereikbaar','contactgegevens']);
+        const asksHansAge = hasAny(q, ['hoe oud bent u','uw leeftijd']);
+
         const asksWho = hasAny(q, ['wie bent u','uw naam','hoe heet u','functie','bent u de manager']);
-        const asksWhere = hasAny(q, [/\bwaar\b/,'adres','straat','plein','locatie','welke winkel','welke supermarkt','waar zijn we','plaats']);
-        const asksWhen = hasAny(q, ['wanneer','hoe laat','tijdstip',/\btijd\b/,'hoelang geleden','vandaag','datum']);
+        const asksWhere = !asksBirth && (!asksPrivateContact || hasAny(q, ['winkel','supermarkt','gebeurd','plaatsgevonden'])) && hasAny(q, [/\bwaar\b/,'adres','straat','plein','locatie','welke winkel','welke supermarkt','waar zijn we','plaats']);
+        const asksWhen = !asksBirth && hasAny(q, ['wanneer','hoe laat','tijdstip',/\btijd\b/,'hoelang geleden','vandaag','datum']);
         const asksShareFootage =
             hasAny(q, ['camerabeeld','camera beeld','beveiligingsbeeld','videobeeld','opname','opnames','foto']) ||
             (hasAny(q, ['beeld','beelden','camera']) && hasAny(q, ['delen','zien','bekijken','tonen','laat','sturen','opsturen','geven','krijgen','heeft u','hebt u','zijn er','mag ik','kan ik','kunt u','wilt u','beschikbaar'])) ||
@@ -1409,17 +1413,39 @@
         const asksBijzonderheden = hasAny(q, ['bijzonderhed','opvallend','bril','wandelstok',/\bstok\b/,'hulpmiddel','kenmerk']);
         const asksClothing = hasAny(q, ['kleding','wat draagt','wat droeg','wat heeft ze aan','wat had ze aan','trui','vest']);
         const asksBag = hasAny(q, ['schoudertas',/\btas\b/]);
-        const asksAppearance = hasAny(q, ['signalement','hoe ziet','uiterlijk','beschrijf haar','leeftijd',/\boud\b/,'haarkleur',/\bhaar\b/,'wie is de verdachte','wie is de dader','wie heeft','over de vrouw','over de dame']);
+        const asksAppearance = !asksHansAge && !asksId && hasAny(q, ['signalement','hoe ziet','uiterlijk','beschrijf haar','leeftijd',/\boud\b/,'haarkleur',/\bhaar\b/,'wie is de verdachte','wie is de dader','wie heeft','over de vrouw','over de dame']);
         const asksDamagePrice = hasAny(q, ['schade','bedrag','totaal','prijs','prijzen','kost','kosten','waarde','euro','hoeveel']);
         const asksStolenItems = hasAny(q, ['wat heeft ze gestolen','wat heeft zij gestolen','wat is er gestolen','welke spullen','welke producten','wat heeft ze gepakt','wat heeft zij gepakt','wat heeft ze meegenomen','buit']);
         const asksPermission = hasAny(q, ['toestemming',/\bmogen\b/,/\bmocht\b/,/\brecht\b/,'vergunning','benadeeld','waarom']);
         const asksReport = hasAny(q, ['aangifte','vervolg','vervolging','aanklacht','straf','wat wilt u','wat wenst u']);
         const isFollowUp = hasAny(q, ['nog meer','verder nog','en verder','en dan','nog iets','aanvulling','details']);
 
-        if (introMatch && !asksWho && !asksWhere && !asksWhen && !asksShareFootage && !asksHowSeen && !asksDecor && !asksTimeline && !asksAppearance && !asksDamagePrice && !asksPermission && !asksReport) {
+        if (introMatch && !asksId && !asksBirth && !asksPrivateContact && !asksHansAge && !asksWho && !asksWhere && !asksWhen && !asksShareFootage && !asksHowSeen && !asksDecor && !asksTimeline && !asksAppearance && !asksDamagePrice && !asksPermission && !asksReport) {
             return `Aangenaam${hansState.agentName ? ' agent ' + hansState.agentName : ''}. Fijn dat u de aangifte opneemt. Stelt u gerust uw vragen over wat er zojuist is gebeurd.`;
         }
-        if (asksWho) { parts.push(revealFact('wie_hans') || 'Zoals ik net al noemde: ik ben Hans, de winkelmanager hier bij Vers & Voordelig.'); hansState.lastTopic = 'identiteit'; }
+        if (asksWho) { parts.push(revealFact('wie_hans') || 'Zoals ik net al noemde: ik ben Hans Koelstra, de winkelmanager hier bij Vers & Voordelig.'); hansState.lastTopic = 'identiteit'; }
+        if (asksId) {
+            const f = revealFact('id_kaart');
+            hansState.revealed.add('geboorte');
+            parts.push(f || 'Mijn identiteitskaart heb ik net al getoond: Hans Koelstra, geboren op 21 januari 1995 in Winterswijk.');
+            if (hasAny(q, ['personalia','uw gegevens']) && !hansState.revealed.has('contact_prive')) {
+                parts.push(revealFact('contact_prive'));
+            }
+            hansState.lastTopic = 'identiteit';
+        }
+        if (asksBirth && !asksId) {
+            parts.push(revealFact('geboorte') || 'Zoals gezegd ben ik geboren op 21 januari 1995 in Winterswijk.');
+            hansState.lastTopic = 'identiteit';
+        }
+        if (asksHansAge && !asksId && !asksBirth) {
+            parts.push('Ik ben 31 jaar oud, geboren op 21 januari 1995 in Winterswijk.');
+            hansState.revealed.add('geboorte');
+            hansState.lastTopic = 'identiteit';
+        }
+        if (asksPrivateContact) {
+            parts.push(revealFact('contact_prive') || 'Ik woon aan de Dorpsstraat 45, 1234 AB in Winkelstad en ben bereikbaar op 06-12345678.');
+            hansState.lastTopic = 'identiteit';
+        }
         if (asksWhere) { parts.push(revealFact('waar_adres') || 'Dit vindt plaats in onze vestiging aan het Plein 12 in Winkelstad.'); hansState.lastTopic = 'plaats'; }
         if (asksWhen) { parts.push(revealFact('wanneer') || 'Dat is zoals gezegd zojuist gebeurd, pakweg twintig minuten voor uw komst.'); hansState.lastTopic = 'tijd'; }
 
@@ -1500,7 +1526,7 @@
         }
 
         if (parts.length === 0 && isGreetingOnly) return `Goedendag${hansState.agentName ? ' agent ' + hansState.agentName : ''}. Wat wilt u als eerste weten voor de aangifte?`;
-        if (parts.length === 0) return `Goede vraag, maar daar heb ik geen specifieke waarneming van. ${suggestRemainingTopics()}`;
+        if (parts.length === 0) return `Goede vraag, maar daar heb ik geen specifieke waarneming van. ${suggestRemainingTopics(false)}`;
 
         let response = parts.join(' ');
         if (introMatch && hansState.agentName) response = `Goedendag agent ${hansState.agentName}. ` + response;
